@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
 
 
 set(CXX_STANDARD 20)
-project(ogl-spirals)
+project(ScratchRunner)
 
 include_directories(src/)
 
