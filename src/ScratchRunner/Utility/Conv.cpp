@@ -3,21 +3,35 @@
 #include <stdexcept>
 #include <exception>
 
-int intFromAny(std::any v) {
+#include "ScratchRunner/Runner.hpp"
+
+int intFromAny(ThreadedTarget* target, std::any v) {
     if (v.type() == typeid(int)) {
         return std::any_cast<int>(v);
     } else if (v.type() == typeid(float)) {
         return static_cast<int>(std::any_cast<float>(v));
+    } else if (v.type() == typeid(Variable)) {
+        auto var = std::any_cast<Variable>(v);
+
+        std::any val = target->getVariable(var.id);
+
+        return intFromAny(target, val);
     }
 
     throw std::runtime_error("Cant convert type!");
 }
 
-int floatFromAny(std::any v) {
+int floatFromAny(ThreadedTarget* target, std::any v) {
     if (v.type() == typeid(int)) {
         return static_cast<float>(std::any_cast<int>(v));
     } else if (v.type() == typeid(float)) {
         return std::any_cast<float>(v);
+    } else if (v.type() == typeid(Variable)) {
+        auto var = std::any_cast<Variable>(v);
+
+        std::any val = target->getVariable(var.id);
+
+        return floatFromAny(target, val);
     }
 
     throw std::runtime_error("Cant convert type!");

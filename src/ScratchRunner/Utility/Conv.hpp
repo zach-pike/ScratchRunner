@@ -2,5 +2,7 @@
 
 #include <any>
 
-int intFromAny(std::any);
-int floatFromAny(std::any);
+#include "ScratchRunner/Scratch/ThreadedTarget/ThreadedTarget.hpp"
+
+int intFromAny(ThreadedTarget* target, std::any);
+int floatFromAny(ThreadedTarget* target, std::any);

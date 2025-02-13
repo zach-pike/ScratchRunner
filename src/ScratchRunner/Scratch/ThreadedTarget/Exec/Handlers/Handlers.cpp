@@ -6,7 +6,7 @@
 
 void motionMoveSteps(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     // Get unit vector for movement
-    float val = floatFromAny(block->inputs["STEPS"]);
+    float val = floatFromAny(target, block->inputs["STEPS"]);
     float dir = target->getDirection();
     glm::vec2 vec = glm::vec2(std::cos(DEG2RAD * (90 - dir)), std::sin(DEG2RAD * (90 - dir)));
     vec *= val;
@@ -17,7 +17,7 @@ void motionMoveSteps(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
 }
 
 void motionTurnLeft(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float val = floatFromAny(block->inputs["DEGREES"]);
+    float val = floatFromAny(target, block->inputs["DEGREES"]);
 
     int ang = target->getDirection();
     ang -= val;
@@ -25,7 +25,7 @@ void motionTurnLeft(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
 }
 
 void motionTurnRight(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float val = floatFromAny(block->inputs["DEGREES"]);
+    float val = floatFromAny(target, block->inputs["DEGREES"]);
 
     float ang = target->getDirection();
     ang += val;
@@ -33,14 +33,14 @@ void motionTurnRight(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
 }
 
 void motionGoToXY(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float x = floatFromAny(block->inputs["X"]);
-    float y = floatFromAny(block->inputs["Y"]);
+    float x = floatFromAny(target, block->inputs["X"]);
+    float y = floatFromAny(target, block->inputs["Y"]);
 
     target->setPosition(glm::ivec2(x, y));
 }
 
 void motionPointInDirection(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float val = floatFromAny(block->inputs["DIRECTION"]);
+    float val = floatFromAny(target, block->inputs["DIRECTION"]);
 
     target->setDirection(val);
 }

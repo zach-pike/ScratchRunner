@@ -4,6 +4,175 @@
 #include <chrono>
 #include <thread>
 
+#include "rapidjson/document.h"
+#include "stb/stb_image.h"
+
+#include <fstream>
+#include <iostream>
+
+static std::vector<std::shared_ptr<ScratchCostume>> parseCostumesFromJSONNode(fs::path basePath, rapidjson::Value& costumeNode) {
+    std::vector<std::shared_ptr<ScratchCostume>> costumes;
+
+    for (auto& costumeJson : costumeNode.GetArray()) {
+        std::string name = costumeJson["name"].GetString();
+        int bitmapRes = costumeJson["bitmapResolution"].GetInt();
+
+        std::string filePath = (basePath / std::string(costumeJson["md5ext"].GetString())).string();
+
+        int rotCenX = costumeJson["rotationCenterX"].GetInt();
+        int rotCenY = costumeJson["rotationCenterY"].GetInt();
+
+        int imgWidth, imgHeight;
+        int channels;
+        std::uint8_t* imgData = stbi_load(filePath.c_str(), &imgWidth, &imgHeight, &channels, 4);
+
+        auto costume = std::make_shared<ScratchCostume>();
+        costume->name = name;
+        costume->bitmapRes = bitmapRes;
+        costume->rotationCenterX = rotCenX;
+        costume->rotationCenterY = rotCenY;
+        costume->pixels = std::vector<std::uint8_t>(imgData, imgData + (imgWidth * imgHeight * channels));
+        costume->pixelWidth = imgWidth;
+        costume->pixelHeight = imgHeight;
+
+        costumes.push_back(costume);
+
+        stbi_image_free(imgData);
+    }
+
+    return std::move(costumes);
+}
+
+static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidjson::Value& blocksNode) {
+    // Loop over the blocks and find all top level blocks
+    std::vector<std::string> topLevelKeys;
+
+    for (auto it = blocksNode.MemberBegin(); it != blocksNode.MemberEnd(); it ++) {
+        if (it->value["topLevel"].GetBool()) {
+            topLevelKeys.push_back(it->name.GetString());
+        }
+    }
+
+    // Parse top level block into a tree structure
+    using ParseBlockType = std::function<std::shared_ptr<ScratchBlock>(rapidjson::Value&, rapidjson::Value&)>;
+
+    ParseBlockType parseBlock = [&](rapidjson::Value& blockRoot, rapidjson::Value& v) {
+        auto newBlock = std::make_shared<ScratchBlock>();
+        newBlock->opcode = v["opcode"].GetString();
+
+        auto& inputs = v["inputs"];
+
+        for (auto it = inputs.MemberBegin(); it != inputs.MemberEnd(); it++) {
+            std::string inputName = it->name.GetString();
+
+            const auto& inputData = it->value.GetArray()[1];
+            const auto& inputArray = inputData.GetArray();
+
+            int inputType = inputArray[0].GetInt();
+
+            if (inputType >= 4 && inputType <= 5) {
+                std::string v = inputArray[1].GetString();
+
+                newBlock->inputs[inputName] = std::stof(v);
+            } else if (inputType >= 6 && inputType <= 8) {
+                std::string v = inputArray[1].GetString();
+
+                newBlock->inputs[inputName] = std::stoi(v);
+            } else if (inputType >= 9 && inputType <= 10) {
+                std::string v = inputArray[1].GetString();
+                newBlock->inputs[inputName] = v;
+            } else if (inputType == 12) {
+                std::string v = inputArray[2].GetString();
+                newBlock->inputs[inputName] = Variable{ v };
+            } else {
+                throw std::runtime_error("Invalid input type!");
+            }
+        }
+                
+        auto& nextJson = v["next"];
+        if (!nextJson.IsNull()) {
+            assert(blockRoot.HasMember(nextJson.GetString()));
+            newBlock->next = parseBlock(blockRoot, blockRoot[nextJson.GetString()]);
+        }
+
+        return newBlock;
+    };
+
+    std::vector<std::shared_ptr<ScratchBlock>> blocks;
+    for (std::string& key : topLevelKeys) {
+        assert(blocksNode.HasMember(key.c_str()));
+        blocks.push_back(parseBlock(blocksNode, blocksNode[key.c_str()]));
+    }
+
+    return std::move(blocks);
+}
+
+static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(fs::path basePath, rapidjson::Value& targetsJson) {
+    std::vector<std::shared_ptr<ThreadedTarget>> targets;
+
+    for (auto& targetJson : targetsJson.GetArray()) {
+        bool isStage = targetJson["isStage"].GetBool();
+        std::string name = targetJson["name"].GetString();
+
+        // Parse the costumes
+        auto costumes = parseCostumesFromJSONNode(basePath, targetJson["costumes"]);
+
+        std::map<std::string, std::any> variables;
+
+        // Initialize all the variables
+        auto& varsJson = targetJson["variables"];
+        for (auto it = varsJson.MemberBegin(); it != varsJson.MemberEnd(); it++) {
+            std::string varId = it->name.GetString();
+
+            auto& val = it->value.GetArray()[1];
+            auto type = val.GetType();
+
+            if (type == rapidjson::Type::kNumberType) {
+                variables[varId] = val.GetFloat();
+            } else if (type == rapidjson::Type::kStringType) {
+                variables[varId] = std::string(val.GetString());
+            } else {
+                assert("aaaaa");
+            }
+        }
+
+        std::map<std::string, std::vector<std::any>> lists;
+
+        // Parse lists WIP
+
+        auto blocks = parseBlocksFromJSONNode(targetJson["blocks"]);
+
+        int currentCostume = targetJson["currentCostume"].GetInt();
+        float posX = targetJson.HasMember("x") ? targetJson["x"].GetFloat() : 0;
+        float posY = targetJson.HasMember("y") ? targetJson["y"].GetFloat() : 0;
+        float size = targetJson.HasMember("size") ? targetJson["size"].GetFloat() : 100;
+        float direction = targetJson.HasMember("direction") ? targetJson["direction"].GetFloat() : 90;
+        bool draggable = targetJson.HasMember("draggable") ? targetJson["draggable"].GetBool() : false;
+        bool visible = targetJson.HasMember("visible") ? targetJson["visible"].GetBool() : true;
+        int layerOrder = targetJson["layerOrder"].GetInt();
+
+        auto target = std::make_shared<ThreadedTarget>(
+            isStage,
+            name,
+            variables,
+            lists,
+            blocks,
+            currentCostume,
+            costumes,
+            layerOrder,
+            visible,
+            glm::vec2(posX, posY),
+            size,
+            direction,
+            draggable
+        );
+        
+        targets.push_back(target);
+    }
+
+    return std::move(targets);
+}
+
 void Runner::initOpenGL() {
     // Initialize OpenGL and load relevant extensions
     if (!glfwInit()) {
@@ -134,28 +303,16 @@ void Runner::broadcastEvent(std::string s) {
     }
 }
 
-void Runner::loadProject(std::shared_ptr<ScratchProject> _project) {
-    originalProject = _project;
+void Runner::loadProject(fs::path basePath) {
+    std::ifstream file(basePath / "project.json");
+    std::stringstream ss;
+    ss << file.rdbuf();
+    std::string fileString = ss.str();
 
-    for (auto& target : originalProject->targets) {
-        auto a = std::make_shared<ThreadedTarget>(
-            target->isStage,
-            target->name,
-            target->variables,
-            target->lists,
-            target->blocks,
-            target->currentCostume,
-            target->costumes,
-            target->layerOrder,
-            target->visible,
-            glm::vec2(target->posX, target->posY),
-            target->size,
-            target->direction,
-            target->draggable
-        );
+    rapidjson::Document document;
+    document.Parse(fileString.c_str());
 
-        targets.push_back(a);
-    }
+    targets = parseTargetsFromJSONNode(basePath, document["targets"]);
 }
 
 void Runner::run() {

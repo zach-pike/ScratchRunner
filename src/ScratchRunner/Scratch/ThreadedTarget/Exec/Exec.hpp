@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../ThreadedTarget.hpp"
-#include "Scratch/ScratchBlock.hpp"
+#include "ScratchRunner/Scratch/ScratchBlock.hpp"
 #include <stdexcept>
 #include <exception>
 

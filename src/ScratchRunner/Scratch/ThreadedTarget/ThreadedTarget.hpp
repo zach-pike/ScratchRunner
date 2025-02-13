@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "Scratch/ScratchBlock.hpp"
-#include "Scratch/ScratchCostume.hpp"
+#include "ScratchRunner/Scratch/ScratchBlock.hpp"
+#include "ScratchRunner/Scratch/ScratchCostume.hpp"
 
 #include "glm/glm.hpp"
 #include "GL/ShaderProgram/ShaderProgram.hpp"

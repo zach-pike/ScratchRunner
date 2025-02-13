@@ -1,19 +1,25 @@
 #pragma once
 
+#include <memory>
+#include <filesystem>
+
 #include "glm/glm.hpp"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-#include <memory>
-#include "Scratch/ScratchProject.hpp"
 #include "GL/ShaderLoaders/VertexFragment.hpp"
 
-#include "ThreadedTarget/ThreadedTarget.hpp"
+#include "Scratch/ThreadedTarget/ThreadedTarget.hpp"
+
+namespace fs = std::filesystem;
+
+struct Variable {
+    std::string id;
+};
 
 class Runner {
 private:
     GLFWwindow* window;
-    std::shared_ptr<ScratchProject> originalProject;
 
     void initOpenGL();
     void uninitOpenGL();
@@ -36,7 +42,7 @@ public:
     Runner() = default;
     ~Runner() = default;
 
-    void loadProject(std::shared_ptr<ScratchProject> project);
+    void loadProject(fs::path basePath);
 
     void run();
 };

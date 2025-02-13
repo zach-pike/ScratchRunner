@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "Scratch/ScratchBlock.hpp"
-#include "ScratchRunner/ThreadedTarget/ThreadedTarget.hpp"
+#include "ScratchRunner/Scratch/ScratchBlock.hpp"
+#include "ScratchRunner/Scratch/ThreadedTarget/ThreadedTarget.hpp"
 
 void motionMoveSteps(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void motionTurnLeft(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
