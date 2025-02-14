@@ -2,12 +2,13 @@
 
 # General TODO
  - [ ] Add ImGui menu
+ - [ ] Text rendering API for looks category
 
 # Order of implementation
- 1. Operator
- 2. Control
  2. Variable
  3. List
+ 1. Operator
+ 2. Control
  4. Motion
  5. Looks
  6. Event
@@ -123,11 +124,11 @@
  - [ ] operator_mathop
 
 ## Variable Blocks
- - [ ] Variable value Reporter
+ - [x] Variable value Reporter
  - [ ] Set variable to
  - [ ] Change variable by
- - [ ] Show variable
- - [ ] Hide variable
+ - [ ] Show variable (WIP wont be working on for awhile)
+ - [ ] Hide variable (WIP wont be working on for awhile)
 
 ## List blocks
  - [ ] List value Reporter
