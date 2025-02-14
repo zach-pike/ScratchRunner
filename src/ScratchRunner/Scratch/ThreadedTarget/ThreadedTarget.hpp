@@ -33,8 +33,12 @@ struct TargetUniforms {
     GLuint angle;
 };
 
+class Runner;
+
 class ThreadedTarget {
 private:
+    Runner* runnerParent;
+
     const bool stage;
     const std::string name;
 
@@ -100,6 +104,8 @@ public:
     int randomInt(int min, int max) const;
     double randomDouble(double min, double max) const;
 
+    Runner* getRunnerParent() const;
+
     // Setters
     void setVariable(std::string id, std::any value);
     void setList(std::string id, std::vector<std::any> value);
@@ -119,6 +125,7 @@ public:
     void operator=(ThreadedTarget&) = delete;
 
     ThreadedTarget(
+        Runner* runner,
         bool isStage,
         std::string name,
         std::map<std::string, std::any> variables,

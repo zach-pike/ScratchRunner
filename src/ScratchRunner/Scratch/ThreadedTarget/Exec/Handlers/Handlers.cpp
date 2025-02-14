@@ -16,7 +16,13 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         return v;
     } else if (v.type() == typeid(Variable)) {
         Variable var = std::any_cast<Variable>(v);
+
+        
         auto val = target->getVariable(var.id);
+
+        if (!val.has_value()) {
+            val = target->getRunnerParent()->getStage()->getVariable(var.id);
+        }
 
         assert(val.has_value());
 

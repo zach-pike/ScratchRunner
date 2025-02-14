@@ -118,7 +118,7 @@ static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidj
     return std::move(blocks);
 }
 
-static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Unzipper& unzipper, rapidjson::Value& targetsJson) {
+static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Runner* runner, Unzipper& unzipper, rapidjson::Value& targetsJson) {
     std::vector<std::shared_ptr<ThreadedTarget>> targets;
 
     for (auto& targetJson : targetsJson.GetArray()) {
@@ -163,6 +163,7 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Unz
         int layerOrder = targetJson["layerOrder"].GetInt();
 
         auto target = std::make_shared<ThreadedTarget>(
+            runner,
             isStage,
             name,
             variables,
@@ -211,8 +212,11 @@ void Runner::uninitOpenGL() {
 
 void Runner::createOpenGLRenderObjects() {
     // Create opengl textures for the costumes in each target
-    for (auto& target : targets) {
-        target->initCostumeTextures();
+    {
+        std::shared_lock lock(targetsListLock);
+        for (auto& target : targets) {
+            target->initCostumeTextures();
+        }
     }
 
     targetShaderProgram = loadVertexFragmentShader("shaders/target/");
@@ -228,8 +232,12 @@ void Runner::createOpenGLRenderObjects() {
 }
 
 void Runner::destroyOpenGLRenderObjects() {
-    for (auto& target : targets) {
-        target->uninitCostumeTextures();
+    {
+        std::shared_lock lock(targetsListLock);
+
+        for (auto& target : targets) {
+            target->uninitCostumeTextures();
+        }
     }
 
     targetShaderProgram.reset();
@@ -237,6 +245,7 @@ void Runner::destroyOpenGLRenderObjects() {
 
 void Runner::drawTargets(glm::vec2 windowSize) {
     if (!targetsSorted) {
+        std::unique_lock lock(targetsListLock);
         std::sort(
             targets.begin(),
             targets.end(),
@@ -248,8 +257,12 @@ void Runner::drawTargets(glm::vec2 windowSize) {
         targetsSorted = true;
     }
 
-    for (auto& target : targets) {
-        target->drawTarget(targetShaderProgram, targetUniforms, windowSize);
+    {
+        std::shared_lock lock(targetsListLock);
+
+        for (auto& target : targets) {
+            target->drawTarget(targetShaderProgram, targetUniforms, windowSize);
+        }
     }
 }
 
@@ -263,8 +276,12 @@ void Runner::mainLoop() {
 
     float aspectRatio;
 
-    for (auto& target : targets) {
-        target->evalTopLevelBlocks();
+    {
+        std::shared_lock lock(targetsListLock);
+
+        for (auto& target : targets) {
+            target->evalTopLevelBlocks();
+        }
     }
 
     broadcastEvent("whenflagclicked");
@@ -309,9 +326,15 @@ void Runner::mainLoop() {
 }
 
 void Runner::broadcastEvent(std::string s) {
+    std::shared_lock lock(targetsListLock);
+
     for (auto& target : targets) {
         target->processEvent(s);
     }
+}
+
+std::shared_ptr<ThreadedTarget> Runner::getStage() const {
+    return stage;
 }
 
 void Runner::loadProject(fs::path basePath) {
@@ -325,7 +348,10 @@ void Runner::loadProject(fs::path basePath) {
     rapidjson::Document document;
     document.Parse(fileString.c_str());
 
-    targets = parseTargetsFromJSONNode(unzipper, document["targets"]);
+    std::unique_lock lock(targetsListLock);
+    targets = parseTargetsFromJSONNode(this, unzipper, document["targets"]);
+
+    stage = *std::find_if(targets.begin(), targets.end(), [](std::shared_ptr<ThreadedTarget>& a) { return a->isStage(); });
 
     unzipper.close();
 }

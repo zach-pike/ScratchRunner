@@ -7,6 +7,8 @@
 #include <iostream>
 #include <functional>
 
+#include "../../Runner.hpp"
+
 bool ThreadedTarget::isStage() const { return stage; }
 std::string ThreadedTarget::getName() const { return name; }
 
@@ -91,6 +93,10 @@ double ThreadedTarget::randomDouble(double min, double max) const {
     double v = dist(rng);
     rngLock.unlock();
     return v;
+}
+
+Runner* ThreadedTarget::getRunnerParent() const {
+    return runnerParent;
 }
 
 // Setters
@@ -187,6 +193,7 @@ void ThreadedTarget::processEvent(std::string event) {
 }
 
 ThreadedTarget::ThreadedTarget(
+    Runner* _runner,
     bool _isStage,
     std::string _name,
     std::map<std::string, std::any> _variables,
@@ -201,6 +208,7 @@ ThreadedTarget::ThreadedTarget(
     double _direction,
     bool _draggable
 ):
+    runnerParent(_runner),
     stage(_isStage),
     name(_name),
     variables(_variables),

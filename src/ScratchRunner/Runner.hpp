@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <shared_mutex>
 #include <filesystem>
 
 #include "glm/glm.hpp"
@@ -31,13 +32,17 @@ private:
     void destroyOpenGLRenderObjects();
 
     bool targetsSorted = false;
+    std::shared_mutex targetsListLock;
     std::vector<std::shared_ptr<ThreadedTarget>> targets;
+    std::shared_ptr<ThreadedTarget> stage;
 
     void drawTargets(glm::vec2 windowSize);
 
     void mainLoop();
-private:
+public:
     void broadcastEvent(std::string s);
+
+    std::shared_ptr<ThreadedTarget> getStage() const;
 public:
     Runner() = default;
     ~Runner() = default;
