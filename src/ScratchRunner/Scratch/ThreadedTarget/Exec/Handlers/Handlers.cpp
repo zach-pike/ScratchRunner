@@ -10,8 +10,7 @@
 #define DEG2RAD (M_PI / 180.f)
 
 static std::any resolveValue(ThreadedTarget* target, std::any v) {
-    if (v.type() == typeid(int) ||
-        v.type() == typeid(float) ||
+    if (v.type() == typeid(double) ||
         v.type() == typeid(std::string)
     ) {
         return v;
@@ -22,25 +21,33 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         assert(val.has_value());
 
         return resolveValue(target, val.value());
+    } else if (v.type() == typeid(std::shared_ptr<ScratchBlock>)) {
+        auto a = std::any_cast<std::shared_ptr<ScratchBlock>>(v);
+
+        return getValueOfReporterBlock(target, a);
     } else {
-        throw std::runtime_error("Unsupported value");
+        throw std::runtime_error("Unsupported value" + std::string(v.type().name()));
     }
+}
+
+static bool isNotExactInteger(double value) {
+    return std::floor(value) != value;
 }
 
 void motionMoveSteps(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     // Get unit vector for movement
-    float val = floatFromAny(resolveValue(target, block->inputs["STEPS"])).value();
-    float dir = target->getDirection();
+    double val = doubleFromAny(resolveValue(target, block->inputs["STEPS"])).value();
+    double dir = target->getDirection();
     glm::vec2 vec = glm::vec2(std::cos(DEG2RAD * (90 - dir)), std::sin(DEG2RAD * (90 - dir)));
     vec *= val;
 
-    glm::vec2 currentPos = target->getPosition();
+    glm::dvec2 currentPos = target->getPosition();
     currentPos += vec;
     target->setPosition(currentPos);
 }
 
 void motionTurnLeft(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float val = floatFromAny(resolveValue(target, block->inputs["DEGREES"])).value();
+    double val = doubleFromAny(resolveValue(target, block->inputs["DEGREES"])).value();
 
     int ang = target->getDirection();
     ang -= val;
@@ -48,22 +55,22 @@ void motionTurnLeft(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
 }
 
 void motionTurnRight(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float val = floatFromAny(resolveValue(target, block->inputs["DEGREES"])).value();
+    double val = doubleFromAny(resolveValue(target, block->inputs["DEGREES"])).value();
 
-    float ang = target->getDirection();
+    double ang = target->getDirection();
     ang += val;
     target->setDirection(ang);
 }
 
 void motionGoToXY(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float x = floatFromAny(resolveValue(target, block->inputs["X"])).value();
-    float y = floatFromAny(resolveValue(target, block->inputs["Y"])).value();
+    double x = doubleFromAny(resolveValue(target, block->inputs["X"])).value();
+    double y = doubleFromAny(resolveValue(target, block->inputs["Y"])).value();
 
     target->setPosition(glm::ivec2(x, y));
 }
 
 void motionPointInDirection(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    float val = floatFromAny(resolveValue(target, block->inputs["DIRECTION"])).value();
+    double val = doubleFromAny(resolveValue(target, block->inputs["DIRECTION"])).value();
     target->setDirection(val);
 }
 
@@ -102,13 +109,65 @@ void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) 
     }
 }
 
+std::any operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["NUM1"]);
+    auto param2 = resolveValue(target, block->inputs["NUM2"]);
+
+    auto fparam1 = doubleFromAny(param1);
+    auto fparam2 = doubleFromAny(param2);
+
+    if (!fparam1 || !fparam2)
+        throw std::runtime_error("Cannot add given types");
+
+    return *fparam1 + *fparam2;
+}
+
+std::any operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["NUM1"]);
+    auto param2 = resolveValue(target, block->inputs["NUM2"]);
+
+    auto fparam1 = doubleFromAny(param1);
+    auto fparam2 = doubleFromAny(param2);
+
+    if (!fparam1 || !fparam2)
+        throw std::runtime_error("Cannot subtract given types");
+
+    return *fparam1 - *fparam2;
+}
+
+std::any operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["NUM1"]);
+    auto param2 = resolveValue(target, block->inputs["NUM2"]);
+
+    auto fparam1 = doubleFromAny(param1);
+    auto fparam2 = doubleFromAny(param2);
+
+    if (!fparam1 || !fparam2)
+        throw std::runtime_error("Cannot multiply given types");
+
+    return *fparam1 * *fparam2;
+}
+
+std::any operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["NUM1"]);
+    auto param2 = resolveValue(target, block->inputs["NUM2"]);
+
+    auto fparam1 = doubleFromAny(param1);
+    auto fparam2 = doubleFromAny(param2);
+
+    if (!fparam1 || !fparam2)
+        throw std::runtime_error("Cannot divide given types");
+
+    return *fparam1 / *fparam2;
+}
+
 std::any operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
-    auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
+    auto param1 = resolveValue(target, block->inputs["NUM1"]);
+    auto param2 = resolveValue(target, block->inputs["NUM2"]);
 
     // Try converting both values to numbers
-    std::optional<float> fparam1 = floatFromAny(param1);
-    std::optional<float> fparam2 = floatFromAny(param2);
+    auto fparam1 = doubleFromAny(param1);
+    auto fparam2 = doubleFromAny(param2);
 
     // If both are numbers, compare numerically
     if (fparam1 && fparam2) {
@@ -127,8 +186,8 @@ std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
     // Try converting both values to numbers
-    std::optional<float> fparam1 = floatFromAny(param1);
-    std::optional<float> fparam2 = floatFromAny(param2);
+    std::optional<double> fparam1 = doubleFromAny(param1);
+    std::optional<double> fparam2 = doubleFromAny(param2);
 
     // If both are numbers, compare numerically
     if (fparam1 && fparam2) {
@@ -140,4 +199,20 @@ std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
     std::string sparam2 = stringFromAny(param2);
 
     return static_cast<int>(sparam1 < sparam2);
+}
+
+std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto from = doubleFromAny(resolveValue(target, block->inputs["FROM"])).value();
+    auto to = doubleFromAny(resolveValue(target, block->inputs["TO"])).value();
+
+
+    if (isNotExactInteger(from) || isNotExactInteger(to)) {
+        double d = target->randomDouble(from, to);
+        std::cout << d << '\n';
+        return d;
+    } else {
+        double d = target->randomInt(from, to);
+        std::cout << d << '\n';
+        return d;
+    }
 }

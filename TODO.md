@@ -100,11 +100,11 @@
  - [ ] Username
 
 ## Operator blocks (All reporters)
- - [ ] Add
- - [ ] Subtract
- - [ ] Multiply
- - [ ] Divide
- - [ ] Random
+ - [x] Add
+ - [x] Subtract
+ - [x] Multiply
+ - [x] Divide
+ - [x] Random
  - [x] Greater Than (B)
  - [x] Less Than (B)
  - [ ] Equals (B)

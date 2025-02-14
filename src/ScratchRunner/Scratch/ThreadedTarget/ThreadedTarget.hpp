@@ -18,6 +18,7 @@
 #include <memory>
 #include <map>
 #include <queue>
+#include <random>
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -60,19 +61,22 @@ private:
     bool visible;
 
     mutable std::shared_mutex positionLock;
-    glm::vec2 position;
+    glm::dvec2 position;
 
     mutable std::shared_mutex sizeLock;
-    float size;
+    double size;
 
     mutable std::shared_mutex directionLock;
-    float direction;
+    double direction;
 
     mutable std::shared_mutex draggableLock;
     bool draggable;
 
     std::vector<std::shared_ptr<Worker>> workers;
     std::map<std::string, std::vector<std::shared_ptr<ScratchBlock>>> eventHandlers;
+
+    mutable std::mutex rngLock;
+    mutable std::mt19937 rng;
     
     // OpenGL stuff
     std::vector<GLuint> costumeTextures;
@@ -88,10 +92,13 @@ public:
     std::vector<std::shared_ptr<ScratchCostume>> getCostumes() const;
     int getLayerOrder() const;
     bool getVisible() const;
-    glm::vec2 getPosition() const;
-    float getSize() const;
-    float getDirection() const;
+    glm::dvec2 getPosition() const;
+    double getSize() const;
+    double getDirection() const;
     bool isDraggable() const;
+
+    int randomInt(int min, int max) const;
+    double randomDouble(double min, double max) const;
 
     // Setters
     void setVariable(std::string id, std::any value);
@@ -100,8 +107,8 @@ public:
     void setLayerOrder(int layerOrder);
     void setVisible(bool visible);
     void setPosition(glm::vec2 pos);
-    void setSize(float size);
-    void setDirection(float direction);
+    void setSize(double size);
+    void setDirection(double direction);
     void setDraggable(bool draggable);
 
     void evalTopLevelBlocks();
@@ -121,9 +128,9 @@ public:
         std::vector<std::shared_ptr<ScratchCostume>> costumes,
         int layerOrder,
         bool visible,
-        glm::vec2 targetPosition,
-        float size,
-        float direction,
+        glm::dvec2 position,
+        double size,
+        double direction,
         bool draggable
     );
 

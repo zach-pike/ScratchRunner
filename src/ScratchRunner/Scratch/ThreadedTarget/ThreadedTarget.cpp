@@ -57,17 +57,17 @@ bool ThreadedTarget::getVisible() const {
     return visible;
 }
 
-glm::vec2 ThreadedTarget::getPosition() const {
+glm::dvec2 ThreadedTarget::getPosition() const {
     std::shared_lock lock(positionLock);
     return position;
 }
 
-float ThreadedTarget::getSize() const {
+double ThreadedTarget::getSize() const {
     std::shared_lock lock(sizeLock);
     return size;
 }
 
-float ThreadedTarget::getDirection() const {
+double ThreadedTarget::getDirection() const {
     std::shared_lock lock(directionLock);
     return direction;
 }
@@ -75,6 +75,22 @@ float ThreadedTarget::getDirection() const {
 bool ThreadedTarget::isDraggable() const {
     std::shared_lock lock(draggableLock);
     return draggable;
+}
+
+int ThreadedTarget::randomInt(int min, int max) const {
+    rngLock.lock();
+    std::uniform_int_distribution<int> dist(min, max);
+    int v = dist(rng);
+    rngLock.unlock();
+    return v;
+}
+
+double ThreadedTarget::randomDouble(double min, double max) const {
+    rngLock.lock();
+    std::uniform_real_distribution<double> dist(min, max);
+    double v = dist(rng);
+    rngLock.unlock();
+    return v;
 }
 
 // Setters
@@ -114,12 +130,12 @@ void ThreadedTarget::setPosition(glm::vec2 pos) {
     position = pos;
 }
 
-void ThreadedTarget::setSize(float _size) {
+void ThreadedTarget::setSize(double _size) {
     std::unique_lock lock(sizeLock);
     size = _size;
 }
 
-void ThreadedTarget::setDirection(float _direction) {
+void ThreadedTarget::setDirection(double _direction) {
     std::unique_lock lock(directionLock);
     direction = _direction;
 }
@@ -180,9 +196,9 @@ ThreadedTarget::ThreadedTarget(
     std::vector<std::shared_ptr<ScratchCostume>> _costumes,
     int _layerOrder,
     bool _visible,
-    glm::vec2 _targetPosition,
-    float _size,
-    float _direction,
+    glm::dvec2 _targetPosition,
+    double _size,
+    double _direction,
     bool _draggable
 ):
     stage(_isStage),

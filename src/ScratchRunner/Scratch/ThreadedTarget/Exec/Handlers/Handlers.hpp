@@ -11,8 +11,15 @@ void motionTurnRight(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
 void motionGoToXY(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void motionPointInDirection(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
-void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
 std::any operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any operatorEq(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+
+void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);

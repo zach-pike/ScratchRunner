@@ -24,6 +24,12 @@ using ReporterHandler = std::function<std::any(ThreadedTarget* target, std::shar
 static std::map<std::string, ReporterHandler> getReporterHandlers() {
     std::map<std::string, ReporterHandler> handlers;
 
+    handlers["operator_add"] = operatorAdd;
+    handlers["operator_subtract"] = operatorSubtract;
+    handlers["operator_multiply"] = operatorMultiply;
+    handlers["operator_divide"] = operatorDivide;
+    handlers["operator_random"] = operatorRandom;
+
     handlers["operator_lt"] = operatorLt;
     handlers["operator_gt"] = operatorGt;
 

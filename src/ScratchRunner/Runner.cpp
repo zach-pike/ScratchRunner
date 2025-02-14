@@ -80,12 +80,9 @@ static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidj
                 const auto& inputArray = inputData.GetArray();
                 int inputType = inputArray[0].GetInt();
 
-                if (inputType >= 4 && inputType <= 5) {
+                if (inputType >= 4 && inputType <= 8) {
                     std::string v = inputArray[1].GetString();
-                    newBlock->inputs[inputName] = std::stof(v);
-                } else if (inputType >= 6 && inputType <= 8) {
-                    std::string v = inputArray[1].GetString();
-                    newBlock->inputs[inputName] = std::stoi(v);
+                    newBlock->inputs[inputName] = std::stod(v);
                 } else if (inputType >= 9 && inputType <= 10) {
                     std::string v = inputArray[1].GetString();
                     newBlock->inputs[inputName] = v;
@@ -142,7 +139,7 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Unz
             auto type = val.GetType();
 
             if (type == rapidjson::Type::kNumberType) {
-                variables[varId] = val.GetFloat();
+                variables[varId] = val.GetDouble();
             } else if (type == rapidjson::Type::kStringType) {
                 variables[varId] = std::string(val.GetString());
             } else {
@@ -157,10 +154,10 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Unz
         auto blocks = parseBlocksFromJSONNode(targetJson["blocks"]);
 
         int currentCostume = targetJson["currentCostume"].GetInt();
-        float posX = targetJson.HasMember("x") ? targetJson["x"].GetFloat() : 0;
-        float posY = targetJson.HasMember("y") ? targetJson["y"].GetFloat() : 0;
-        float size = targetJson.HasMember("size") ? targetJson["size"].GetFloat() : 100;
-        float direction = targetJson.HasMember("direction") ? targetJson["direction"].GetFloat() : 90;
+        double posX = targetJson.HasMember("x") ? targetJson["x"].GetDouble() : 0;
+        double posY = targetJson.HasMember("y") ? targetJson["y"].GetDouble() : 0;
+        double size = targetJson.HasMember("size") ? targetJson["size"].GetDouble() : 100;
+        double direction = targetJson.HasMember("direction") ? targetJson["direction"].GetDouble() : 90;
         bool draggable = targetJson.HasMember("draggable") ? targetJson["draggable"].GetBool() : false;
         bool visible = targetJson.HasMember("visible") ? targetJson["visible"].GetBool() : true;
         int layerOrder = targetJson["layerOrder"].GetInt();
@@ -175,7 +172,7 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Unz
             costumes,
             layerOrder,
             visible,
-            glm::vec2(posX, posY),
+            glm::dvec2(posX, posY),
             size,
             direction,
             draggable
