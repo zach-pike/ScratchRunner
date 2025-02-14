@@ -7,3 +7,5 @@
 
 
 void ExecBlock(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+
+std::any getValueOfReporterBlock(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);

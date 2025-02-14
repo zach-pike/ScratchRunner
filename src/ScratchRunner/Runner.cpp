@@ -10,6 +10,9 @@
 #include <fstream>
 #include <iostream>
 
+#include <string>
+#include <sstream>
+
 static std::vector<std::shared_ptr<ScratchCostume>> parseCostumesFromJSONNode(fs::path basePath, rapidjson::Value& costumeNode) {
     std::vector<std::shared_ptr<ScratchCostume>> costumes;
 
@@ -66,26 +69,31 @@ static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidj
             std::string inputName = it->name.GetString();
 
             const auto& inputData = it->value.GetArray()[1];
-            const auto& inputArray = inputData.GetArray();
+            
+            if (inputData.IsArray()) {
+                const auto& inputArray = inputData.GetArray();
+                int inputType = inputArray[0].GetInt();
 
-            int inputType = inputArray[0].GetInt();
+                if (inputType >= 4 && inputType <= 5) {
+                    std::string v = inputArray[1].GetString();
+                    newBlock->inputs[inputName] = std::stof(v);
+                } else if (inputType >= 6 && inputType <= 8) {
+                    std::string v = inputArray[1].GetString();
+                    newBlock->inputs[inputName] = std::stoi(v);
+                } else if (inputType >= 9 && inputType <= 10) {
+                    std::string v = inputArray[1].GetString();
+                    newBlock->inputs[inputName] = v;
+                } else if (inputType == 12) {
+                    std::string v = inputArray[2].GetString();
+                    newBlock->inputs[inputName] = Variable{ v };
+                } else {
+                    throw std::runtime_error("Invalid input type!");
+                }
+            } else if (inputData.IsString()) {
+                std::string v = inputData.GetString();
 
-            if (inputType >= 4 && inputType <= 5) {
-                std::string v = inputArray[1].GetString();
-
-                newBlock->inputs[inputName] = std::stof(v);
-            } else if (inputType >= 6 && inputType <= 8) {
-                std::string v = inputArray[1].GetString();
-
-                newBlock->inputs[inputName] = std::stoi(v);
-            } else if (inputType >= 9 && inputType <= 10) {
-                std::string v = inputArray[1].GetString();
-                newBlock->inputs[inputName] = v;
-            } else if (inputType == 12) {
-                std::string v = inputArray[2].GetString();
-                newBlock->inputs[inputName] = Variable{ v };
-            } else {
-                throw std::runtime_error("Invalid input type!");
+                // If its just a string then its a link to another block
+                newBlock->inputs[inputName] = parseBlock(blockRoot, blockRoot[v.c_str()]);
             }
         }
                 

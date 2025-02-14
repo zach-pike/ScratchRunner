@@ -1,8 +1,9 @@
 #pragma once
 
 #include <any>
+#include <optional>
+#include <string>
 
-#include "ScratchRunner/Scratch/ThreadedTarget/ThreadedTarget.hpp"
-
-int intFromAny(ThreadedTarget* target, std::any);
-int floatFromAny(ThreadedTarget* target, std::any);
+// int intFromAny(std::any);
+std::optional<float> floatFromAny(const std::any& value);
+std::string stringFromAny(const std::any& value);
