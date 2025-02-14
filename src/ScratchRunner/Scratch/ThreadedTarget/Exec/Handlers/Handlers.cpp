@@ -214,11 +214,9 @@ std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bl
 
     if (isNotExactInteger(from) || isNotExactInteger(to)) {
         double d = target->randomDouble(from, to);
-        std::cout << d << '\n';
         return d;
     } else {
         double d = target->randomInt(from, to);
-        std::cout << d << '\n';
         return d;
     }
 }
