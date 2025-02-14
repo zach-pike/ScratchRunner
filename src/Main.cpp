@@ -6,6 +6,6 @@
 
 int main() {
     Runner runner;
-    runner.loadProject("proj/");
+    runner.loadProject("Scratch Project(2).sb3");
     runner.run();
 }

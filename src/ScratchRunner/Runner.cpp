@@ -13,21 +13,27 @@
 #include <string>
 #include <sstream>
 
-static std::vector<std::shared_ptr<ScratchCostume>> parseCostumesFromJSONNode(fs::path basePath, rapidjson::Value& costumeNode) {
+#include <Zipper/unzipper.h>
+using namespace zipper;
+
+static std::vector<std::shared_ptr<ScratchCostume>> parseCostumesFromJSONNode(Unzipper& unzipper, rapidjson::Value& costumeNode) {
     std::vector<std::shared_ptr<ScratchCostume>> costumes;
 
     for (auto& costumeJson : costumeNode.GetArray()) {
         std::string name = costumeJson["name"].GetString();
         int bitmapRes = costumeJson["bitmapResolution"].GetInt();
 
-        std::string filePath = (basePath / std::string(costumeJson["md5ext"].GetString())).string();
+        std::string filePath = std::string(costumeJson["md5ext"].GetString());
 
         int rotCenX = costumeJson["rotationCenterX"].GetInt();
         int rotCenY = costumeJson["rotationCenterY"].GetInt();
 
+        std::vector<std::uint8_t> imageBytes;
+        unzipper.extractEntryToMemory(filePath, imageBytes);
+
         int imgWidth, imgHeight;
         int channels;
-        std::uint8_t* imgData = stbi_load(filePath.c_str(), &imgWidth, &imgHeight, &channels, 4);
+        std::uint8_t* imgData = stbi_load_from_memory(imageBytes.data(), imageBytes.size(), &imgWidth, &imgHeight, &channels, 4);
 
         auto costume = std::make_shared<ScratchCostume>();
         costume->name = name;
@@ -115,7 +121,7 @@ static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidj
     return std::move(blocks);
 }
 
-static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(fs::path basePath, rapidjson::Value& targetsJson) {
+static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Unzipper& unzipper, rapidjson::Value& targetsJson) {
     std::vector<std::shared_ptr<ThreadedTarget>> targets;
 
     for (auto& targetJson : targetsJson.GetArray()) {
@@ -123,7 +129,7 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(fs:
         std::string name = targetJson["name"].GetString();
 
         // Parse the costumes
-        auto costumes = parseCostumesFromJSONNode(basePath, targetJson["costumes"]);
+        auto costumes = parseCostumesFromJSONNode(unzipper, targetJson["costumes"]);
 
         std::map<std::string, std::any> variables;
 
@@ -312,15 +318,19 @@ void Runner::broadcastEvent(std::string s) {
 }
 
 void Runner::loadProject(fs::path basePath) {
-    std::ifstream file(basePath / "project.json");
-    std::stringstream ss;
-    ss << file.rdbuf();
-    std::string fileString = ss.str();
+    Unzipper unzipper(basePath.string());
+    std::vector<ZipEntry> entries = unzipper.entries();
+
+    std::vector<std::uint8_t> projectJsonBytes;
+    unzipper.extractEntryToMemory("project.json", projectJsonBytes);
+    std::string fileString = std::string(projectJsonBytes.begin(), projectJsonBytes.end());
 
     rapidjson::Document document;
     document.Parse(fileString.c_str());
 
-    targets = parseTargetsFromJSONNode(basePath, document["targets"]);
+    targets = parseTargetsFromJSONNode(unzipper, document["targets"]);
+
+    unzipper.close();
 }
 
 void Runner::run() {
