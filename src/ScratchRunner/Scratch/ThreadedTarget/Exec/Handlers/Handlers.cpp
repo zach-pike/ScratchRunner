@@ -3,11 +3,18 @@
 #include "ScratchRunner/Utility/Conv.hpp"
 #include "../Exec.hpp"
 #include "ScratchRunner/Runner.hpp"
-
+#include <cxxabi.h>
 #include <iostream>
 
-
 #define DEG2RAD (M_PI / 180.f)
+
+static std::string demangle(const char* name) {
+    int status = 0;
+    char* demangled = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+    std::string result = (status == 0) ? demangled : name;
+    free(demangled);
+    return result;
+}
 
 static std::any resolveValue(ThreadedTarget* target, std::any v) {
     if (v.type() == typeid(double) ||
@@ -32,7 +39,7 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
 
         return getValueOfReporterBlock(target, a);
     } else {
-        throw std::runtime_error("Unsupported value" + std::string(v.type().name()));
+        throw std::runtime_error("Unsupported value \"" + demangle(v.type().name()) + "\"");
     }
 }
 
@@ -81,6 +88,8 @@ void motionPointInDirection(ThreadedTarget* target, std::shared_ptr<ScratchBlock
 }
 
 void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    if (!block->inputs.contains("CONDITION") || !block->inputs.contains("SUBSTACK")) return;
+
     // Get the value of the condition
     std::shared_ptr<ScratchBlock> condition = 
         std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["CONDITION"]);
@@ -96,21 +105,25 @@ void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
 }
 
 void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    if (!block->inputs.contains("CONDITION")) return;
+
     // Get the value of the condition
     std::shared_ptr<ScratchBlock> condition = 
         std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["CONDITION"]);
 
-    std::shared_ptr<ScratchBlock> substack = 
-        std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK"]);
-
-    std::shared_ptr<ScratchBlock> substack2 = 
-        std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK2"]);
-
     auto val = getValueOfReporterBlock(target, condition);
 
     if (std::any_cast<int>(val) != 0) {
+        if (!block->inputs.contains("SUBSTACK")) return;
+        std::shared_ptr<ScratchBlock> substack = 
+            std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK"]);
         ExecBlock(target, substack);
     } else {
+        if (!block->inputs.contains("SUBSTACK2")) return;
+        
+        std::shared_ptr<ScratchBlock> substack2 = 
+            std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK2"]);
+
         ExecBlock(target, substack2);
     }
 }
@@ -167,20 +180,30 @@ std::any operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bl
     return *fparam1 / *fparam2;
 }
 
-std::any operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    auto param1 = resolveValue(target, block->inputs["NUM1"]);
-    auto param2 = resolveValue(target, block->inputs["NUM2"]);
+std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto from = doubleFromAny(resolveValue(target, block->inputs["FROM"])).value();
+    auto to = doubleFromAny(resolveValue(target, block->inputs["TO"])).value();
 
-    // Try converting both values to numbers
+    if (isNotExactInteger(from) || isNotExactInteger(to)) {
+        double d = target->randomDouble(from, to);
+        return d;
+    } else {
+        double d = target->randomInt(from, to);
+        return d;
+    }
+}
+
+std::any operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
+    auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
+
     auto fparam1 = doubleFromAny(param1);
     auto fparam2 = doubleFromAny(param2);
 
-    // If both are numbers, compare numerically
     if (fparam1 && fparam2) {
         return static_cast<int>(*fparam1 > *fparam2);
     }
 
-    // Otherwise, compare as strings
     std::string sparam1 = stringFromAny(param1);
     std::string sparam2 = stringFromAny(param2);
 
@@ -195,28 +218,58 @@ std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
     std::optional<double> fparam1 = doubleFromAny(param1);
     std::optional<double> fparam2 = doubleFromAny(param2);
 
-    // If both are numbers, compare numerically
     if (fparam1 && fparam2) {
         return static_cast<int>(*fparam1 < *fparam2);
     }
 
-    // Otherwise, compare as strings
     std::string sparam1 = stringFromAny(param1);
     std::string sparam2 = stringFromAny(param2);
 
     return static_cast<int>(sparam1 < sparam2);
 }
 
-std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    auto from = doubleFromAny(resolveValue(target, block->inputs["FROM"])).value();
-    auto to = doubleFromAny(resolveValue(target, block->inputs["TO"])).value();
+std::any operatorEq(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
+    auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
+    // Try converting both values to numbers
+    std::optional<double> fparam1 = doubleFromAny(param1);
+    std::optional<double> fparam2 = doubleFromAny(param2);
 
-    if (isNotExactInteger(from) || isNotExactInteger(to)) {
-        double d = target->randomDouble(from, to);
-        return d;
-    } else {
-        double d = target->randomInt(from, to);
-        return d;
+    if (fparam1 && fparam2) {
+        return static_cast<int>(*fparam1 == *fparam2);
     }
+
+    std::string sparam1 = stringFromAny(param1);
+    std::string sparam2 = stringFromAny(param2);
+
+    return static_cast<int>(sparam1 == sparam2);
+}
+
+std::any operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
+    auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
+
+    int val1 = std::any_cast<int>(param1);
+    int val2 = std::any_cast<int>(param2);
+
+    return static_cast<int>(val1 && val2);
+}
+
+std::any operatorOr(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
+    auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
+
+    int val1 = std::any_cast<int>(param1);
+    int val2 = std::any_cast<int>(param2);
+
+    return static_cast<int>(val1 || val2);
+}
+
+std::any operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto param1 = resolveValue(target, block->inputs["OPERAND"]);
+
+    int val1 = std::any_cast<int>(param1);
+
+    return static_cast<int>(!val1);
 }

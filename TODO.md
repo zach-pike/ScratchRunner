@@ -1,5 +1,8 @@
 # Blocks to implement
 
+# General TODO
+ - [ ] Add ImGui menu
+
 # Order of implementation
  1. Operator
  2. Control
@@ -107,10 +110,10 @@
  - [x] Random
  - [x] Greater Than (B)
  - [x] Less Than (B)
- - [ ] Equals (B)
- - [ ] And (B)
- - [ ] Or (B)
- - [ ] Not (B)
+ - [x] Equals (B)
+ - [x] And (B)
+ - [x] Or (B)
+ - [x] Not (B)
  - [ ] Join
  - [ ] Letter of
  - [ ] Length of
