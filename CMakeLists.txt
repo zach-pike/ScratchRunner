@@ -22,6 +22,7 @@ set(SCRATCH_RUNNER_SRC
 
 add_executable(Main ${SCRATCH_RUNNER_SRC})
 target_include_directories(Main PRIVATE include/)
+target_include_directories(Main PRIVATE include/glm)
 target_include_directories(Main PRIVATE ${CMAKE_SOURCE_DIR}/src/)
 target_include_directories(Main PRIVATE ${CMAKE_SOURCE_DIR}/include/rapidjson/include/)
 target_link_directories(Main PRIVATE lib/)
