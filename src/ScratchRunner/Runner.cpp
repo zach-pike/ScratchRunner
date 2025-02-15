@@ -93,6 +93,9 @@ static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidj
                 } else if (inputType == 12) {
                     std::string v = inputArray[2].GetString();
                     newBlock->inputs[inputName] = Variable{ v };
+                } else if (inputType == 13) {
+                    std::string v = inputArray[2].GetString();
+                    newBlock->inputs[inputName] = List{ v };
                 } else {
                     throw std::runtime_error("Invalid input type!");
                 }
@@ -157,13 +160,32 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Run
             } else if (type == rapidjson::Type::kStringType) {
                 variables[varId] = std::string(val.GetString());
             } else {
-                assert("aaaaa");
+                assert(false);
             }
         }
 
         std::map<std::string, std::vector<std::any>> lists;
 
-        // Parse lists WIP
+        // Initialize the variables
+        auto& listJson = targetJson["lists"];
+        for (auto it = listJson.MemberBegin(); it != listJson.MemberEnd(); it++) {
+            std::string listId = it->name.GetString();
+            const auto& val = it->value.GetArray()[1].GetArray();
+
+            auto& list = lists[listId];
+
+            for(const auto& arrayItem : val) {
+                auto type = arrayItem.GetType();
+
+                if (type == rapidjson::Type::kNumberType) {
+                    list.push_back(arrayItem.GetDouble());
+                } else if (type == rapidjson::Type::kStringType) {
+                    list.push_back(std::string(arrayItem.GetString()));
+                } else {
+                    assert(false);
+                }
+            }
+        }
 
         auto blocks = parseBlocksFromJSONNode(targetJson["blocks"]);
 

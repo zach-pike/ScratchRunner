@@ -124,14 +124,14 @@
  - [ ] operator_mathop
 
 ## Variable Blocks
- - [x] Variable value Reporter
+ - [x] Variable value
  - [x] Set variable to
  - [x] Change variable by
  - [ ] Show variable (WIP wont be working on for awhile)
  - [ ] Hide variable (WIP wont be working on for awhile)
 
 ## List blocks
- - [ ] List value Reporter
+ - [x] List value
  - [ ] Add to list
  - [ ] Delete of list
  - [ ] Delete all of
@@ -141,5 +141,5 @@
  - [ ] Item num of list Reporter
  - [ ] Length of list Reporter
  - [ ] List contains item Reporter (B)
- - [ ] Show list
- - [ ] Hide list
+ - [ ] Show list (WIP wont be working on for awhile)
+ - [ ] Hide list (WIP wont be working on for awhile)

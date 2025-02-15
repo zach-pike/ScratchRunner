@@ -3,8 +3,9 @@
 #include <stdexcept>
 #include <exception>
 #include <iostream>
+#include <charconv>
 
-std::optional<double> doubleFromAny(const std::any& value) {
+double doubleFromAny(const std::any& value) {
     try {
         if (value.type() == typeid(double)) {
             return std::any_cast<double>(value);
@@ -16,9 +17,9 @@ std::optional<double> doubleFromAny(const std::any& value) {
             }
         }
     } catch (...) {
-        return std::nullopt;
+        return 0;
     }
-    return std::nullopt;
+    return 0;
 }
 
 std::string stringFromAny(const std::any& value) {
@@ -29,4 +30,16 @@ std::string stringFromAny(const std::any& value) {
         return std::to_string(std::any_cast<double>(value));
     }
     return "";
+}
+
+bool isValidDouble(const std::string& str) {
+    if (str.empty()) return false;  // Handle empty string case
+
+    const char* begin = str.data();
+    const char* end = begin + str.size();
+    double value; 
+
+    auto [ptr, ec] = std::from_chars(begin, end, value, std::chars_format::general);
+
+    return ec == std::errc{} && ptr == end;  // Ensure full parsing
 }

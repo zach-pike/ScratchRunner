@@ -4,5 +4,7 @@
 #include <optional>
 #include <string>
 
-std::optional<double> doubleFromAny(const std::any& value);
+double doubleFromAny(const std::any& value);
 std::string stringFromAny(const std::any& value);
+
+bool isValidDouble(const std::string& str);
