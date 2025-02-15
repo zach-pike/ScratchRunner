@@ -25,4 +25,5 @@ public:
     std::string opcode;
     std::optional<std::shared_ptr<ScratchBlock>> next;
     std::map<std::string, std::any> inputs;
+    std::map<std::string, std::string> fields;
 };

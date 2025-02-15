@@ -17,6 +17,9 @@ static std::map<std::string, BlockHandler> getBlockHandlers() {
     handlers["control_if"] = controlIf;
     handlers["control_if_else"] = controlElseIf;
 
+    handlers["data_setvariableto"] = variableSetTo;
+    handlers["data_changevariableby"] = variableChangeBy;
+
     return handlers;
 }
 

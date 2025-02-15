@@ -125,8 +125,8 @@
 
 ## Variable Blocks
  - [x] Variable value Reporter
- - [ ] Set variable to
- - [ ] Change variable by
+ - [x] Set variable to
+ - [x] Change variable by
  - [ ] Show variable (WIP wont be working on for awhile)
  - [ ] Hide variable (WIP wont be working on for awhile)
 

@@ -23,6 +23,8 @@ std::any operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
 std::any operatorOr(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 std::any operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
-
 void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+
+void variableSetTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);

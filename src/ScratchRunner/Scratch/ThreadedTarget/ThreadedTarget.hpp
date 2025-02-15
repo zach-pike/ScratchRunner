@@ -89,6 +89,7 @@ public:
     bool isStage() const;
     std::string getName() const;
     std::optional<std::any> getVariable(std::string id) const;
+    bool hasVariable(std::string id) const;
     std::optional<std::vector<std::any>> getList(std::string id) const;
     std::vector<std::shared_ptr<ScratchBlock>> getBlocks() const;
     int getCurrentCostumeID() const;

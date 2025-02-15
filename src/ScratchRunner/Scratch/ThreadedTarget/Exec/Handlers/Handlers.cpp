@@ -273,3 +273,52 @@ std::any operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
 
     return static_cast<int>(!val1);
 }
+
+void variableSetTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto value = resolveValue(target, block->inputs.at("VALUE"));
+    std::string variableID = block->fields.at("VARIABLE");
+
+    // Try and see if its a sprite var
+    if (target->hasVariable(variableID)) {
+        target->setVariable(variableID, value);
+    } else if (target->getRunnerParent()->getStage()->hasVariable(variableID)) {
+        target->getRunnerParent()->getStage()->setVariable(variableID, value);
+    } else {
+        assert(false);
+    }
+}
+
+void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto value = resolveValue(target, block->inputs.at("VALUE"));
+    std::string variableID = block->fields.at("VARIABLE");
+
+    // Is this a local var or a global var?
+    if (target->hasVariable(variableID)) {
+        auto currentVal = target->getVariable(variableID).value();
+
+        if (currentVal.type() == typeid(std::string)) {
+            target->setVariable(variableID, doubleFromAny(value).value());
+        } else if (currentVal.type() == typeid(double)) {
+            double newValue = std::any_cast<double>(currentVal) + doubleFromAny(value).value();
+            target->setVariable(variableID, newValue);
+        } else {
+            assert(false);
+        }
+
+    } else if (target->getRunnerParent()->getStage()->hasVariable(variableID)) {
+        auto stage = target->getRunnerParent()->getStage();
+        
+        auto currentVal = stage->getVariable(variableID).value();
+
+        if (currentVal.type() == typeid(std::string)) {
+            stage->setVariable(variableID, doubleFromAny(value).value());
+        } else if (currentVal.type() == typeid(double)) {
+            double newValue = std::any_cast<double>(currentVal) + doubleFromAny(value).value();
+            stage->setVariable(variableID, newValue);
+        } else {
+            assert(false);
+        }
+    } else {
+        assert(false);
+    }
+}

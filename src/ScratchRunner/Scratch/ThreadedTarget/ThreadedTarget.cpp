@@ -24,6 +24,12 @@ std::optional<std::any> ThreadedTarget::getVariable(std::string id) const {
         return it->second;
 }
 
+bool ThreadedTarget::hasVariable(std::string id) const {
+    std::shared_lock lock(variablesLock);
+
+    return variables.contains(id);
+}
+
 std::optional<std::vector<std::any>> ThreadedTarget::getList(std::string id) const {
     std::shared_lock lock(listsLock);
 

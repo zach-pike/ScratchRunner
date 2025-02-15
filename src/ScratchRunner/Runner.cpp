@@ -103,7 +103,17 @@ static std::vector<std::shared_ptr<ScratchBlock>> parseBlocksFromJSONNode(rapidj
                 newBlock->inputs[inputName] = parseBlock(blockRoot, blockRoot[v.c_str()]);
             }
         }
-                
+
+        auto& fields = v["fields"];
+
+        for (auto it = fields.MemberBegin(); it != fields.MemberEnd(); it++) {
+            std::string fieldName = it->name.GetString();
+
+            const auto fieldValue =  std::string(it->value.GetArray()[1].GetString());
+
+            newBlock->fields[fieldName] = fieldValue;
+        }
+
         auto& nextJson = v["next"];
         if (!nextJson.IsNull()) {
             assert(blockRoot.HasMember(nextJson.GetString()));
