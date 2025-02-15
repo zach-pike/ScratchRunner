@@ -7,3 +7,6 @@
 [submodule "lib/zipper"]
 	path = lib/zipper
 	url = https://github.com/Lecrapouille/zipper
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = https://github.com/ocornut/imgui

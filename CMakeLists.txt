@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.30.0)
 
 project(ScratchRunner VERSION 1.0)
 
-add_subdirectory(lib/glad/)
-add_subdirectory(lib/stb/)
+add_subdirectory(lib/)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -26,4 +25,4 @@ target_include_directories(Main PRIVATE include/)
 target_include_directories(Main PRIVATE ${CMAKE_SOURCE_DIR}/src/)
 target_include_directories(Main PRIVATE ${CMAKE_SOURCE_DIR}/include/rapidjson/include/)
 target_link_directories(Main PRIVATE lib/)
-target_link_libraries(Main glfw3 Glad STBImage Zipper Zlib)
+target_link_libraries(Main glfw3 Glad STBImage Zipper Zlib ImGui)

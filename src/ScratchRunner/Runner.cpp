@@ -13,6 +13,10 @@
 #include <string>
 #include <sstream>
 
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 #include <Zipper/unzipper.h>
 using namespace zipper;
 
@@ -203,10 +207,22 @@ void Runner::initOpenGL() {
 	// glEnable(GL_DEPTH_TEST);
 	// glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
 }
 
 void Runner::uninitOpenGL() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     glfwTerminate();
 }
 
@@ -284,8 +300,6 @@ void Runner::mainLoop() {
         }
     }
 
-    broadcastEvent("whenflagclicked");
-
     while(!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS) {
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -300,11 +314,25 @@ void Runner::mainLoop() {
             aspectRatio = (float)windowWidth / (float)windowHeight;
         }
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
         // Render code here
 
+        ImGui::Begin("Event Menu");
+
+            if (ImGui::Button("WhenFlagClicked")) {
+                broadcastEvent("whenflagclicked");
+            }
+
+        ImGui::End();
+        
         drawTargets(glm::vec2(windowWidth, windowHeight));
 
         // End render code
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         
         glfwSwapBuffers(window);
 
