@@ -27,7 +27,7 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         auto val = target->getVariable(var.id);
 
         if (!val.has_value()) {
-            val = target->getRunnerParent()->getStage()->getVariable(var.id);
+            val = target->getStage()->getVariable(var.id);
         }
 
         assert(val.has_value());
@@ -38,7 +38,7 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         auto val = target->getList(var.id);
 
         if (!val.has_value()) {
-            val = target->getRunnerParent()->getStage()->getList(var.id);
+            val = target->getStage()->getList(var.id);
         }
 
         assert(val.has_value());
@@ -293,8 +293,8 @@ void variableSetTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) 
     // Try and see if its a sprite var
     if (target->hasVariable(variableID)) {
         target->setVariable(variableID, value);
-    } else if (target->getRunnerParent()->getStage()->hasVariable(variableID)) {
-        target->getRunnerParent()->getStage()->setVariable(variableID, value);
+    } else if (target->getStage()->hasVariable(variableID)) {
+        target->getStage()->setVariable(variableID, value);
     } else {
         assert(false);
     }
@@ -317,8 +317,8 @@ void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bloc
             assert(false);
         }
 
-    } else if (target->getRunnerParent()->getStage()->hasVariable(variableID)) {
-        auto stage = target->getRunnerParent()->getStage();
+    } else if (target->getStage()->hasVariable(variableID)) {
+        auto stage = target->getStage();
 
         auto currentVal = stage->getVariable(variableID).value();
 
@@ -330,6 +330,71 @@ void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bloc
         } else {
             assert(false);
         }
+    } else {
+        assert(false);
+    }
+}
+
+void listAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    auto value = resolveValue(target, block->inputs.at("ITEM"));
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        target->listAppend(listID, value);
+    } else if (target->getStage()->hasList(listID)) {
+        target->getStage()->listAppend(listID, value);
+    } else {
+        assert(false);
+    }
+}
+
+void listDelete(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        target->listDeleteItem(listID, index);
+    } else if (target->getStage()->hasList(listID)) {
+        target->getStage()->listDeleteItem(listID, index);
+    } else {
+        assert(false);
+    }
+}
+
+void listDeleteAll(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    std::string listID = block->fields.at("LIST");
+    if (target->hasList(listID)) {
+        target->listClear(listID);
+    } else if (target->getStage()->hasList(listID)) {
+        target->getStage()->listClear(listID);
+    } else {
+        assert(false);
+    }
+}
+
+void listInsertAt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
+    auto item = resolveValue(target, block->inputs.at("ITEM"));
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        target->listInsertAt(listID, index, item);
+    } else if (target->getStage()->hasList(listID)) {
+        target->getStage()->listInsertAt(listID, index, item);
+    } else {
+        assert(false);
+    }
+}
+
+void listReplaceItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
+    auto item = resolveValue(target, block->inputs.at("ITEM"));
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        target->listReplaceAt(listID, index, item);
+    } else if (target->getStage()->hasList(listID)) {
+        target->getStage()->listReplaceAt(listID, index, item);
     } else {
         assert(false);
     }

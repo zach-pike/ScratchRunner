@@ -20,6 +20,12 @@ static std::map<std::string, BlockHandler> getBlockHandlers() {
     handlers["data_setvariableto"] = variableSetTo;
     handlers["data_changevariableby"] = variableChangeBy;
 
+    handlers["data_addtolist"] = listAdd;
+    handlers["data_deleteoflist"] = listDelete;
+    handlers["data_deletealloflist"] = listDeleteAll;
+    handlers["data_insertatlist"] = listInsertAt;
+    handlers["data_replaceitemoflist"] = listReplaceItem;
+
     return handlers;
 }
 

@@ -90,6 +90,7 @@ public:
     std::string getName() const;
     std::optional<std::any> getVariable(std::string id) const;
     bool hasVariable(std::string id) const;
+    bool hasList(std::string id) const;
     std::optional<std::vector<std::any>> getList(std::string id) const;
     std::vector<std::shared_ptr<ScratchBlock>> getBlocks() const;
     int getCurrentCostumeID() const;
@@ -106,10 +107,20 @@ public:
     double randomDouble(double min, double max) const;
 
     Runner* getRunnerParent() const;
+    std::shared_ptr<ThreadedTarget> getStage() const;
 
     // Setters
     void setVariable(std::string id, std::any value);
     void setList(std::string id, std::vector<std::any> value);
+
+    // List operations (saves on memory moving)
+    void listAppend(std::string id, std::any value);
+    void listDeleteItem(std::string id, int scratchIndex);
+    void listClear(std::string id);
+    void listInsertAt(std::string id, int scratchIndex, std::any value);
+    void listReplaceAt(std::string id, int scratchIndex, std::any value);
+
+
     void setCurrentCostumeID(int costume);
     void setLayerOrder(int layerOrder);
     void setVisible(bool visible);

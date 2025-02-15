@@ -30,6 +30,12 @@ bool ThreadedTarget::hasVariable(std::string id) const {
     return variables.contains(id);
 }
 
+bool ThreadedTarget::hasList(std::string id) const {
+    std::shared_lock lock(listsLock);
+
+    return lists.contains(id);
+}
+
 std::optional<std::vector<std::any>> ThreadedTarget::getList(std::string id) const {
     std::shared_lock lock(listsLock);
 
@@ -105,6 +111,10 @@ Runner* ThreadedTarget::getRunnerParent() const {
     return runnerParent;
 }
 
+std::shared_ptr<ThreadedTarget> ThreadedTarget::getStage() const {
+    return runnerParent->getStage();
+}
+
 // Setters
 void ThreadedTarget::setVariable(std::string id, std::any value) {
     std::unique_lock lock(variablesLock);
@@ -120,6 +130,53 @@ void ThreadedTarget::setList(std::string id, std::vector<std::any> value) {
     assert(lists.count(id) > 0);
 
     lists.at(id) = value;
+}
+
+void ThreadedTarget::listAppend(std::string id, std::any value) {
+    std::unique_lock lock(listsLock);
+    lists.at(id).push_back(value);
+}
+
+void ThreadedTarget::listDeleteItem(std::string id, int scratchIndex) {
+    std::unique_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    if (scratchIndex < 1 || scratchIndex > list.size())
+        return;
+
+    list.erase(list.begin() + scratchIndex - 1);
+}
+
+void ThreadedTarget::listClear(std::string id) {
+    std::unique_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    list.clear();
+}
+
+void ThreadedTarget::listInsertAt(std::string id, int scratchIndex, std::any value) {
+    std::unique_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    if (scratchIndex < 1 || scratchIndex > (list.size() + 1))
+        return;
+
+    // Wierd thing scratch does
+    if (scratchIndex == (list.size() + 1))  {
+        list.push_back(value);
+    } else {
+        list.insert(list.begin() + scratchIndex - 1, value);
+    }
+}   
+
+void ThreadedTarget::listReplaceAt(std::string id, int scratchIndex, std::any value) {
+    std::unique_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    if (scratchIndex < 1 || scratchIndex > list.size())
+        return;
+
+    list.at(scratchIndex - 1) = value;
 }
 
 void ThreadedTarget::setCurrentCostumeID(int costume) {

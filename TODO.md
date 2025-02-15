@@ -132,11 +132,11 @@
 
 ## List blocks
  - [x] List value
- - [ ] Add to list
- - [ ] Delete of list
- - [ ] Delete all of
- - [ ] Insert at list
- - [ ] Replace item
+ - [x] Add to list
+ - [x] Delete of list
+ - [x] Delete all of
+ - [x] Insert at list
+ - [x] Replace item
  - [ ] Item of list Reporter
  - [ ] Item num of list Reporter
  - [ ] Length of list Reporter

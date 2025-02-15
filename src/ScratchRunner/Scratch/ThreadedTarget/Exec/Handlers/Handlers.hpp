@@ -28,3 +28,9 @@ void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
 void variableSetTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+
+void listAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+void listDelete(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+void listDeleteAll(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+void listInsertAt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+void listReplaceItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
