@@ -4,6 +4,11 @@
  - [ ] Add ImGui menu
  - [ ] Text rendering API for looks category
 
+# Block fixes
+ - [ ] Make moveSteps clamp at screen border
+ - [ ] Fix handler names
+ - [ ] Switch to std::variant instead of std::any
+
 # Order of implementation
  2. Variable
  3. List
