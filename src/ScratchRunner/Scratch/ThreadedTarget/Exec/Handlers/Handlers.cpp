@@ -127,7 +127,7 @@ void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     }
 }
 
-void controlElseIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void controlIfElse(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     if (!block->inputs.contains("CONDITION")) return;
 
     // Get the value of the condition
@@ -237,7 +237,7 @@ std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
     return static_cast<int>(sparam1 < sparam2);
 }
 
-std::any operatorEq(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+std::any operatorEquals(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
@@ -272,7 +272,7 @@ std::any operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
     return static_cast<int>(!val1);
 }
 
-void variableSetTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataSetVariableTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto value = resolveValue(target, block->inputs.at("VALUE"));
     std::string variableID = block->fields.at("VARIABLE");
 
@@ -286,7 +286,7 @@ void variableSetTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) 
     }
 }
 
-void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataChangeVariableBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto value = resolveValue(target, block->inputs.at("VALUE"));
     std::string variableID = block->fields.at("VARIABLE");
 
@@ -321,7 +321,7 @@ void variableChangeBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bloc
     }
 }
 
-void listAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataAddToList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto value = resolveValue(target, block->inputs.at("ITEM"));
     std::string listID = block->fields.at("LIST");
 
@@ -334,7 +334,7 @@ void listAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     }
 }
 
-void listDelete(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataDeleteOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
     std::string listID = block->fields.at("LIST");
 
@@ -347,7 +347,7 @@ void listDelete(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     }
 }
 
-void listDeleteAll(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataDeleteAllOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     std::string listID = block->fields.at("LIST");
     if (target->hasList(listID)) {
         target->listClear(listID);
@@ -358,7 +358,7 @@ void listDeleteAll(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) 
     }
 }
 
-void listInsertAt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataInsertAtList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
     auto item = resolveValue(target, block->inputs.at("ITEM"));
     std::string listID = block->fields.at("LIST");
@@ -372,7 +372,7 @@ void listInsertAt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     }
 }
 
-void listReplaceItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+void dataReplaceItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
     auto item = resolveValue(target, block->inputs.at("ITEM"));
     std::string listID = block->fields.at("LIST");

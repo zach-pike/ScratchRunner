@@ -6,7 +6,7 @@
 
 # Block fixes
  - [ ] Make moveSteps clamp at screen border
- - [ ] Fix handler names
+ - [x] Fix handler names
  - [ ] Switch to std::variant instead of std::any
 
 # Order of implementation
