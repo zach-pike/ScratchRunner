@@ -15,16 +15,16 @@ static std::map<std::string, BlockHandler> getBlockHandlers() {
     handlers["motion_pointindirection"] = motionPointInDirection;
 
     handlers["control_if"] = controlIf;
-    handlers["control_if_else"] = controlElseIf;
+    handlers["control_if_else"] = controlIfElse;
 
-    handlers["data_setvariableto"] = variableSetTo;
-    handlers["data_changevariableby"] = variableChangeBy;
+    handlers["data_setvariableto"] = dataSetVariableTo;
+    handlers["data_changevariableby"] = dataChangeVariableBy;
 
-    handlers["data_addtolist"] = listAdd;
-    handlers["data_deleteoflist"] = listDelete;
-    handlers["data_deletealloflist"] = listDeleteAll;
-    handlers["data_insertatlist"] = listInsertAt;
-    handlers["data_replaceitemoflist"] = listReplaceItem;
+    handlers["data_addtolist"] = dataAddToList;
+    handlers["data_deleteoflist"] = dataDeleteOfList;
+    handlers["data_deletealloflist"] = dataDeleteAllOfList;
+    handlers["data_insertatlist"] = dataInsertAtList;
+    handlers["data_replaceitemoflist"] = dataReplaceItemOfList;
 
     // Used for debugging
     // handlers["looks_sayforsecs"] = debugPrint;
@@ -32,7 +32,7 @@ static std::map<std::string, BlockHandler> getBlockHandlers() {
     return handlers;
 }
 
-using ReporterHandler = std::function<std::any(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)>;
+using ReporterHandler = std::function<ScratchValue(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)>;
 static std::map<std::string, ReporterHandler> getReporterHandlers() {
     std::map<std::string, ReporterHandler> handlers;
 
@@ -43,7 +43,7 @@ static std::map<std::string, ReporterHandler> getReporterHandlers() {
     handlers["operator_random"] = operatorRandom;
     handlers["operator_lt"] = operatorLt;
     handlers["operator_gt"] = operatorGt;
-    handlers["operator_equals"] = operatorEq;
+    handlers["operator_equals"] = operatorEquals;
     handlers["operator_and"] = operatorAnd;
     handlers["operator_or"] = operatorOr;
     handlers["operator_not"] = operatorNot;
@@ -75,7 +75,7 @@ void ExecBlock(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     }
 }
 
-std::any getValueOfReporterBlock(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue getValueOfReporterBlock(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto handlers = getReporterHandlers();
 
     // assert(handlers.contains(block->opcode));

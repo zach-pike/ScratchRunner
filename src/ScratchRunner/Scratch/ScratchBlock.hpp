@@ -1,11 +1,12 @@
 #pragma once
 
-#include <any>
 #include <optional>
 #include <vector>
 #include <string>
 #include <map>
 #include <memory>
+
+#include "ScratchRunner/Utility/Vars.hpp"
 
 class ScratchBlock {
 public:
@@ -24,6 +25,6 @@ public:
 
     std::string opcode;
     std::optional<std::shared_ptr<ScratchBlock>> next;
-    std::map<std::string, std::any> inputs;
+    std::map<std::string, ScratchValue> inputs;
     std::map<std::string, std::string> fields;
 };

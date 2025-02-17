@@ -145,7 +145,7 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Run
         // Parse the costumes
         auto costumes = parseCostumesFromJSONNode(unzipper, targetJson["costumes"]);
 
-        std::map<std::string, std::any> variables;
+        std::map<std::string, ScratchValue> variables;
 
         // Initialize all the variables
         auto& varsJson = targetJson["variables"];
@@ -164,7 +164,7 @@ static std::vector<std::shared_ptr<ThreadedTarget>> parseTargetsFromJSONNode(Run
             }
         }
 
-        std::map<std::string, std::vector<std::any>> lists;
+        std::map<std::string, std::vector<ScratchValue>> lists;
 
         // Initialize the variables
         auto& listJson = targetJson["lists"];

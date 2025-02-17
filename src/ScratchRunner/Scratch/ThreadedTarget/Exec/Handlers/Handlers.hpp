@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "ScratchRunner/Utility/Vars.hpp"
 #include "ScratchRunner/Scratch/ScratchBlock.hpp"
 #include "ScratchRunner/Scratch/ThreadedTarget/ThreadedTarget.hpp"
 
@@ -14,17 +15,17 @@ void motionPointInDirection(ThreadedTarget* target, std::shared_ptr<ScratchBlock
 void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void controlIfElse(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
-std::any operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorEquals(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorOr(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorEquals(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorOr(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
 void dataSetVariableTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void dataChangeVariableBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
@@ -34,9 +35,9 @@ void dataDeleteOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bloc
 void dataDeleteAllOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void dataInsertAtList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void dataReplaceItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
-std::any dataListContainsItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+ScratchValue dataListContainsItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 
 void debugPrint(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);

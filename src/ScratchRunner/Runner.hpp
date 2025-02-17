@@ -14,14 +14,6 @@
 
 namespace fs = std::filesystem;
 
-struct Variable {
-    std::string id;
-};
-
-struct List {
-    std::string id;
-};
-
 class Runner {
 private:
     GLFWwindow* window;

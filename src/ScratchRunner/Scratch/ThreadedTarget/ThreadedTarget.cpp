@@ -8,14 +8,12 @@
 #include <functional>
 #include <algorithm>
 
-#include "ScratchRunner/Utility/Vars.hpp"
-
 #include "../../Runner.hpp"
 
 bool ThreadedTarget::isStage() const { return stage; }
 std::string ThreadedTarget::getName() const { return name; }
 
-std::optional<std::any> ThreadedTarget::getVariable(std::string id) const {
+std::optional<ScratchValue> ThreadedTarget::getVariable(std::string id) const {
     std::shared_lock lock(variablesLock);
 
     // Try and find the var
@@ -39,7 +37,7 @@ bool ThreadedTarget::hasList(std::string id) const {
     return lists.contains(id);
 }
 
-std::optional<std::vector<std::any>> ThreadedTarget::getList(std::string id) const {
+std::optional<std::vector<ScratchValue>> ThreadedTarget::getList(std::string id) const {
     std::shared_lock lock(listsLock);
 
     // Try and find the var
@@ -119,7 +117,7 @@ std::shared_ptr<ThreadedTarget> ThreadedTarget::getStage() const {
 }
 
 // Setters
-void ThreadedTarget::setVariable(std::string id, std::any value) {
+void ThreadedTarget::setVariable(std::string id, ScratchValue value) {
     std::unique_lock lock(variablesLock);
 
     assert(variables.count(id) > 0);
@@ -127,7 +125,7 @@ void ThreadedTarget::setVariable(std::string id, std::any value) {
     variables.at(id) = value;
 }
 
-void ThreadedTarget::setList(std::string id, std::vector<std::any> value) {
+void ThreadedTarget::setList(std::string id, std::vector<ScratchValue> value) {
     std::unique_lock lock(listsLock);
 
     assert(lists.count(id) > 0);
@@ -135,7 +133,7 @@ void ThreadedTarget::setList(std::string id, std::vector<std::any> value) {
     lists.at(id) = value;
 }
 
-void ThreadedTarget::listAppend(std::string id, std::any value) {
+void ThreadedTarget::listAppend(std::string id, ScratchValue value) {
     std::unique_lock lock(listsLock);
     lists.at(id).push_back(value);
 }
@@ -157,7 +155,7 @@ void ThreadedTarget::listClear(std::string id) {
     list.clear();
 }
 
-void ThreadedTarget::listInsertAt(std::string id, int scratchIndex, std::any value) {
+void ThreadedTarget::listInsertAt(std::string id, int scratchIndex, ScratchValue value) {
     std::unique_lock lock(listsLock);
     auto& list = lists.at(id);
 
@@ -172,7 +170,7 @@ void ThreadedTarget::listInsertAt(std::string id, int scratchIndex, std::any val
     }
 }   
 
-void ThreadedTarget::listReplaceAt(std::string id, int scratchIndex, std::any value) {
+void ThreadedTarget::listReplaceAt(std::string id, int scratchIndex, ScratchValue value) {
     std::unique_lock lock(listsLock);
     auto& list = lists.at(id);
 
@@ -182,7 +180,7 @@ void ThreadedTarget::listReplaceAt(std::string id, int scratchIndex, std::any va
     list.at(scratchIndex - 1) = value;
 }
 
-std::any ThreadedTarget::listAt(std::string id, int scratchIndex) const {
+ScratchValue ThreadedTarget::listAt(std::string id, int scratchIndex) const {
     std::shared_lock lock(listsLock);
     auto& list = lists.at(id);
 
@@ -192,14 +190,14 @@ std::any ThreadedTarget::listAt(std::string id, int scratchIndex) const {
     return list.at(scratchIndex - 1);
 }
 
-std::size_t ThreadedTarget::listFind(std::string id, std::any value) const {
+std::size_t ThreadedTarget::listFind(std::string id, ScratchValue value) const {
     std::shared_lock lock(listsLock);
     auto& list = lists.at(id);
 
     auto it = std::find_if(
         list.begin(),
         list.end(),
-        [&value](std::any v) {
+        [&value](ScratchValue v) {
             return valuesAreEqual(v, value);
         }
     );
@@ -217,14 +215,14 @@ std::size_t ThreadedTarget::listLength(std::string id) const {
     return list.size();
 }
 
-bool ThreadedTarget::listContains(std::string id, std::any value) const {
+bool ThreadedTarget::listContains(std::string id, ScratchValue value) const {
     std::shared_lock lock(listsLock);
     auto& list = lists.at(id);
 
     auto it = std::find_if(
         list.begin(),
         list.end(),
-        [&value](std::any v) {
+        [&value](ScratchValue v) {
             return valuesAreEqual(v, value);
         }
     );
@@ -312,8 +310,8 @@ ThreadedTarget::ThreadedTarget(
     Runner* _runner,
     bool _isStage,
     std::string _name,
-    std::map<std::string, std::any> _variables,
-    std::map<std::string, std::vector<std::any>> _lists,
+    std::map<std::string, ScratchValue> _variables,
+    std::map<std::string, std::vector<ScratchValue>> _lists,
     std::vector<std::shared_ptr<ScratchBlock>> _blocks,
     int _currentCostume,
     std::vector<std::shared_ptr<ScratchCostume>> _costumes,

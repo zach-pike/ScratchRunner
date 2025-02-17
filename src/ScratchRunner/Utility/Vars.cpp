@@ -9,8 +9,8 @@ bool isNotExactInteger(double value) {
     return std::floor(value) != value;
 }
 
-bool valuesAreEqual(std::any val1, std::any val2) {
-    if (val1.type() == typeid(std::string) || val2.type() == typeid(std::string)) {
+bool valuesAreEqual(ScratchValue val1, ScratchValue val2) {
+    if (std::holds_alternative<std::string>(val1) || std::holds_alternative<std::string>(val2)) {
         std::string sparam1 = stringFromAny(val1);
         std::string sparam2 = stringFromAny(val2);
 

@@ -18,13 +18,13 @@ static std::string demangle(const char* name) {
     return result;
 }
 
-static std::any resolveValue(ThreadedTarget* target, std::any v) {
-    if (v.type() == typeid(double) ||
-        v.type() == typeid(std::string)
+static ScratchValue resolveValue(ThreadedTarget* target, ScratchValue v) {
+    if (std::holds_alternative<double>(v) ||
+        std::holds_alternative<std::string>(v)
     ) {
         return v;
-    } else if (v.type() == typeid(Variable)) {
-        Variable var = std::any_cast<Variable>(v);
+    } else if (std::holds_alternative<Variable>(v)) {
+        Variable var = std::get<Variable>(v);
         auto val = target->getVariable(var.id);
 
         if (!val.has_value()) {
@@ -34,8 +34,8 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         assert(val.has_value());
 
         return val.value();
-    } else if (v.type() == typeid(List)) {
-        List var = std::any_cast<List>(v);
+    } else if (std::holds_alternative<List>(v)) {
+        List var = std::get<List>(v);
         auto val = target->getList(var.id);
 
         if (!val.has_value()) {
@@ -47,7 +47,7 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         auto& list = val.value();
 
         // Do the stupid thing scratch does
-        auto stringIt = std::find_if(list.begin(), list.end(), [](std::any& a) {
+        auto stringIt = std::find_if(list.begin(), list.end(), [](ScratchValue& a) {
             return !isValidDouble(stringFromAny(a));
         });
 
@@ -61,12 +61,12 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
         }
 
         return s;
-    } else if (v.type() == typeid(std::shared_ptr<ScratchBlock>)) {
-        auto a = std::any_cast<std::shared_ptr<ScratchBlock>>(v);
+    } else if (std::holds_alternative<std::shared_ptr<ScratchBlock>>(v)) {
+        auto a = std::get<std::shared_ptr<ScratchBlock>>(v);
 
         return getValueOfReporterBlock(target, a);
     } else {
-        throw std::runtime_error("Unsupported value \"" + demangle(v.type().name()) + "\"");
+        assert(false);
     }
 }
 
@@ -85,7 +85,7 @@ void motionMoveSteps(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
 void motionTurnLeft(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     double val = doubleFromAny(resolveValue(target, block->inputs["DEGREES"]));
 
-    int ang = target->getDirection();
+    double ang = target->getDirection();
     ang -= val;
     target->setDirection(ang);
 }
@@ -115,14 +115,14 @@ void controlIf(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
 
     // Get the value of the condition
     std::shared_ptr<ScratchBlock> condition = 
-        std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["CONDITION"]);
+        std::get<std::shared_ptr<ScratchBlock>>(block->inputs["CONDITION"]);
 
     std::shared_ptr<ScratchBlock> substack = 
-        std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK"]);
+        std::get<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK"]);
 
     auto val = getValueOfReporterBlock(target, condition);
 
-    if (std::any_cast<int>(val) != 0) {
+    if (std::get<bool>(val) != 0) {
         ExecBlock(target, substack);
     }
 }
@@ -132,26 +132,26 @@ void controlIfElse(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) 
 
     // Get the value of the condition
     std::shared_ptr<ScratchBlock> condition = 
-        std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["CONDITION"]);
+        std::get<std::shared_ptr<ScratchBlock>>(block->inputs["CONDITION"]);
 
     auto val = getValueOfReporterBlock(target, condition);
 
-    if (std::any_cast<int>(val) != 0) {
+    if (std::get<bool>(val) != 0) {
         if (!block->inputs.contains("SUBSTACK")) return;
         std::shared_ptr<ScratchBlock> substack = 
-            std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK"]);
+            std::get<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK"]);
         ExecBlock(target, substack);
     } else {
         if (!block->inputs.contains("SUBSTACK2")) return;
         
         std::shared_ptr<ScratchBlock> substack2 = 
-            std::any_cast<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK2"]);
+            std::get<std::shared_ptr<ScratchBlock>>(block->inputs["SUBSTACK2"]);
 
         ExecBlock(target, substack2);
     }
 }
 
-std::any operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["NUM1"]);
     auto param2 = resolveValue(target, block->inputs["NUM2"]);
 
@@ -161,7 +161,7 @@ std::any operatorAdd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
     return fparam1 + fparam2;
 }
 
-std::any operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["NUM1"]);
     auto param2 = resolveValue(target, block->inputs["NUM2"]);
 
@@ -171,7 +171,7 @@ std::any operatorSubtract(ThreadedTarget* target, std::shared_ptr<ScratchBlock> 
     return fparam1 - fparam2;
 }
 
-std::any operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["NUM1"]);
     auto param2 = resolveValue(target, block->inputs["NUM2"]);
 
@@ -181,7 +181,7 @@ std::any operatorMultiply(ThreadedTarget* target, std::shared_ptr<ScratchBlock> 
     return fparam1 * fparam2;
 }
 
-std::any operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["NUM1"]);
     auto param2 = resolveValue(target, block->inputs["NUM2"]);
 
@@ -191,7 +191,7 @@ std::any operatorDivide(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bl
     return fparam1 / fparam2;
 }
 
-std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto from = doubleFromAny(resolveValue(target, block->inputs["FROM"]));
     auto to = doubleFromAny(resolveValue(target, block->inputs["TO"]));
 
@@ -204,22 +204,22 @@ std::any operatorRandom(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bl
     }
 }
 
-std::any operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorGt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
     auto fparam1 = doubleFromAny(param1);
     auto fparam2 = doubleFromAny(param2);
 
-    return static_cast<int>(fparam1 > fparam2);
+    return static_cast<bool>(fparam1 > fparam2);
 
     std::string sparam1 = stringFromAny(param1);
     std::string sparam2 = stringFromAny(param2);
 
-    return static_cast<int>(sparam1 > sparam2);
+    return static_cast<bool>(sparam1 > sparam2);
 }
 
-std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
@@ -228,48 +228,46 @@ std::any operatorLt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
     std::optional<double> fparam2 = doubleFromAny(param2);
 
     if (fparam1 && fparam2) {
-        return static_cast<int>(*fparam1 < *fparam2);
+        return static_cast<bool>(*fparam1 < *fparam2);
     }
 
     std::string sparam1 = stringFromAny(param1);
     std::string sparam2 = stringFromAny(param2);
 
-    return static_cast<int>(sparam1 < sparam2);
+    return static_cast<bool>(sparam1 < sparam2);
 }
 
-std::any operatorEquals(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorEquals(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
-    return static_cast<int>(valuesAreEqual(param1, param2));
+    return static_cast<bool>(valuesAreEqual(param1, param2));
 }
 
-std::any operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
-    int val1 = std::any_cast<int>(param1);
-    int val2 = std::any_cast<int>(param2);
+    bool val1 = std::get<bool>(param1);
+    bool val2 = std::get<bool>(param2);
 
-    return static_cast<int>(val1 && val2);
+    return static_cast<bool>(val1 && val2);
 }
 
-std::any operatorOr(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorOr(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
-    int val1 = std::any_cast<int>(param1);
-    int val2 = std::any_cast<int>(param2);
+    bool val1 = std::get<bool>(param1);
+    bool val2 = std::get<bool>(param2);
 
-    return static_cast<int>(val1 || val2);
+    return static_cast<bool>(val1 || val2);
 }
 
-std::any operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue operatorNot(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     auto param1 = resolveValue(target, block->inputs["OPERAND"]);
 
-    int val1 = std::any_cast<int>(param1);
-
-    return static_cast<int>(!val1);
+    return static_cast<bool>(!std::get<bool>(param1));
 }
 
 void dataSetVariableTo(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
@@ -294,10 +292,10 @@ void dataChangeVariableBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> 
     if (target->hasVariable(variableID)) {
         auto currentVal = target->getVariable(variableID).value();
 
-        if (currentVal.type() == typeid(std::string)) {
+        if (std::holds_alternative<std::string>(currentVal)) {
             target->setVariable(variableID, doubleFromAny(value));
-        } else if (currentVal.type() == typeid(double)) {
-            double newValue = std::any_cast<double>(currentVal) + doubleFromAny(value);
+        } else if (std::holds_alternative<double>(currentVal)) {
+            double newValue = std::get<double>(currentVal) + doubleFromAny(value);
             target->setVariable(variableID, newValue);
         } else {
             assert(false);
@@ -308,10 +306,10 @@ void dataChangeVariableBy(ThreadedTarget* target, std::shared_ptr<ScratchBlock> 
 
         auto currentVal = stage->getVariable(variableID).value();
 
-        if (currentVal.type() == typeid(std::string)) {
+        if (std::holds_alternative<std::string>(currentVal)) {
             stage->setVariable(variableID, doubleFromAny(value));
-        } else if (currentVal.type() == typeid(double)) {
-            double newValue = std::any_cast<double>(currentVal) + doubleFromAny(value);
+        } else if (std::holds_alternative<double>(currentVal)) {
+            double newValue = std::get<double>(currentVal) + doubleFromAny(value);
             stage->setVariable(variableID, newValue);
         } else {
             assert(false);
@@ -386,7 +384,7 @@ void dataReplaceItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock>
     }
 }
 
-std::any dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
     std::string listID = block->fields.at("LIST");
 
@@ -399,8 +397,8 @@ std::any dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> bl
     }
 }
 
-std::any dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    std::any item = resolveValue(target, block->inputs.at("ITEM"));
+ScratchValue dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    ScratchValue item = resolveValue(target, block->inputs.at("ITEM"));
     std::string listID = block->fields.at("LIST");
 
     if (target->hasList(listID)) {
@@ -412,7 +410,7 @@ std::any dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock>
     }
 }
 
-std::any dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     std::string listID = block->fields.at("LIST");
 
     if (target->hasList(listID)) {
@@ -424,21 +422,21 @@ std::any dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> 
     }
 }
 
-std::any dataListContainsItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+ScratchValue dataListContainsItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
     std::string listID = block->fields.at("LIST");
-    std::any item = resolveValue(target, block->inputs.at("ITEM"));
+    ScratchValue item = resolveValue(target, block->inputs.at("ITEM"));
 
     if (target->hasList(listID)) {
-        return static_cast<int>(target->listContains(listID, item));
+        return static_cast<bool>(target->listContains(listID, item));
     } else if (target->getStage()->hasList(listID)) {
-        return static_cast<int>(target->getStage()->listContains(listID, item));
+        return static_cast<bool>(target->getStage()->listContains(listID, item));
     } else {
         assert(false);
     }
 }
 
 void debugPrint(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
-    std::any item = resolveValue(target, block->inputs.at("MESSAGE"));
+    ScratchValue item = resolveValue(target, block->inputs.at("MESSAGE"));
 
     std::cout << "DEBUG: \"" << stringFromAny(item) << "\"\n";
 }

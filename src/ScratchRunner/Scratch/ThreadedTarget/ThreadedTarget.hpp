@@ -3,6 +3,7 @@
 
 #include "ScratchRunner/Scratch/ScratchBlock.hpp"
 #include "ScratchRunner/Scratch/ScratchCostume.hpp"
+#include "ScratchRunner/Utility/Vars.hpp"
 
 #include "glm/glm.hpp"
 #include "GL/ShaderProgram/ShaderProgram.hpp"
@@ -43,10 +44,10 @@ private:
     const std::string name;
 
     mutable std::shared_mutex variablesLock;
-    std::map<std::string, std::any> variables;
+    std::map<std::string, ScratchValue> variables;
 
     mutable std::shared_mutex listsLock;
-    std::map<std::string, std::vector<std::any>> lists;
+    std::map<std::string, std::vector<ScratchValue>> lists;
 
     // Broadcasts WIP
     
@@ -88,10 +89,10 @@ public:
     // Getters
     bool isStage() const;
     std::string getName() const;
-    std::optional<std::any> getVariable(std::string id) const;
+    std::optional<ScratchValue> getVariable(std::string id) const;
     bool hasVariable(std::string id) const;
     bool hasList(std::string id) const;
-    std::optional<std::vector<std::any>> getList(std::string id) const;
+    std::optional<std::vector<ScratchValue>> getList(std::string id) const;
     std::vector<std::shared_ptr<ScratchBlock>> getBlocks() const;
     int getCurrentCostumeID() const;
     std::shared_ptr<ScratchCostume> getCurrentCostume() const;
@@ -110,20 +111,20 @@ public:
     std::shared_ptr<ThreadedTarget> getStage() const;
 
     // Setters
-    void setVariable(std::string id, std::any value);
-    void setList(std::string id, std::vector<std::any> value);
+    void setVariable(std::string id, ScratchValue value);
+    void setList(std::string id, std::vector<ScratchValue> value);
 
     // List operations (saves on memory moving)
-    void listAppend(std::string id, std::any value);
+    void listAppend(std::string id, ScratchValue value);
     void listDeleteItem(std::string id, int scratchIndex);
     void listClear(std::string id);
-    void listInsertAt(std::string id, int scratchIndex, std::any value);
-    void listReplaceAt(std::string id, int scratchIndex, std::any value);
+    void listInsertAt(std::string id, int scratchIndex, ScratchValue value);
+    void listReplaceAt(std::string id, int scratchIndex, ScratchValue value);
 
-    std::any listAt(std::string id, int scratchIndex) const;
-    std::size_t listFind(std::string id, std::any value) const;
+    ScratchValue listAt(std::string id, int scratchIndex) const;
+    std::size_t listFind(std::string id, ScratchValue value) const;
     std::size_t listLength(std::string id) const;
-    bool listContains(std::string id, std::any value) const;
+    bool listContains(std::string id, ScratchValue value) const;
 
     void setCurrentCostumeID(int costume);
     void setLayerOrder(int layerOrder);
@@ -144,8 +145,8 @@ public:
         Runner* runner,
         bool isStage,
         std::string name,
-        std::map<std::string, std::any> variables,
-        std::map<std::string, std::vector<std::any>> lists,
+        std::map<std::string, ScratchValue> variables,
+        std::map<std::string, std::vector<ScratchValue>> lists,
         std::vector<std::shared_ptr<ScratchBlock>> blocks,
         int currentCostume,
         std::vector<std::shared_ptr<ScratchCostume>> costumes,

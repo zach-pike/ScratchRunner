@@ -1,10 +1,11 @@
 #pragma once
 
-#include <any>
 #include <optional>
 #include <string>
 
-double doubleFromAny(const std::any& value);
-std::string stringFromAny(const std::any& value);
+#include "ScratchRunner/Utility/Vars.hpp"
+
+double doubleFromAny(const ScratchValue& value);
+std::string stringFromAny(const ScratchValue& value);
 
 bool isValidDouble(const std::string& str);

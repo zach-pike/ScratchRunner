@@ -5,13 +5,13 @@
 #include <iostream>
 #include <charconv>
 
-double doubleFromAny(const std::any& value) {
+double doubleFromAny(const ScratchValue& value) {
     try {
-        if (value.type() == typeid(double)) {
-            return std::any_cast<double>(value);
+        if (std::holds_alternative<double>(value)) {
+            return std::get<double>(value);
         }
-        if (value.type() == typeid(std::string)) {
-            std::string strValue = std::any_cast<std::string>(value);
+        if (std::holds_alternative<std::string>(value)) {
+            std::string strValue = std::get<std::string>(value);
             if (!strValue.empty() && (std::isdigit(strValue[0]) || strValue[0] == '-' || strValue[0] == '.')) {
                 return std::stof(strValue);
             }
@@ -22,12 +22,12 @@ double doubleFromAny(const std::any& value) {
     return 0;
 }
 
-std::string stringFromAny(const std::any& value) {
-    if (value.type() == typeid(std::string)) {
-        return std::any_cast<std::string>(value);
+std::string stringFromAny(const ScratchValue& value) {
+    if (std::holds_alternative<std::string>(value)) {
+        return std::get<std::string>(value);
     }
-    if (value.type() == typeid(double)) {
-        return std::to_string(std::any_cast<double>(value));
+    if (std::holds_alternative<double>(value)) {
+        return std::to_string(std::get<double>(value));
     }
     return "";
 }
