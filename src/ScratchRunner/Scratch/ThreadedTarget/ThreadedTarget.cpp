@@ -6,6 +6,9 @@
 #include <exception>
 #include <iostream>
 #include <functional>
+#include <algorithm>
+
+#include "ScratchRunner/Utility/Vars.hpp"
 
 #include "../../Runner.hpp"
 
@@ -177,6 +180,56 @@ void ThreadedTarget::listReplaceAt(std::string id, int scratchIndex, std::any va
         return;
 
     list.at(scratchIndex - 1) = value;
+}
+
+std::any ThreadedTarget::listAt(std::string id, int scratchIndex) const {
+    std::shared_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    if (scratchIndex < 1 || scratchIndex > list.size())
+        return std::string();
+    
+    return list.at(scratchIndex - 1);
+}
+
+std::size_t ThreadedTarget::listFind(std::string id, std::any value) const {
+    std::shared_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    auto it = std::find_if(
+        list.begin(),
+        list.end(),
+        [&value](std::any v) {
+            return valuesAreEqual(v, value);
+        }
+    );
+
+    if (it == list.end())
+        return 0;
+
+    return it - list.begin() + 1;
+}
+
+std::size_t ThreadedTarget::listLength(std::string id) const {
+    std::shared_lock lock(listsLock);
+    auto& list = lists.at(id);
+    
+    return list.size();
+}
+
+bool ThreadedTarget::listContains(std::string id, std::any value) const {
+    std::shared_lock lock(listsLock);
+    auto& list = lists.at(id);
+
+    auto it = std::find_if(
+        list.begin(),
+        list.end(),
+        [&value](std::any v) {
+            return valuesAreEqual(v, value);
+        }
+    );
+
+    return (it != list.end());
 }
 
 void ThreadedTarget::setCurrentCostumeID(int costume) {

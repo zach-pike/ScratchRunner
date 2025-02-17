@@ -5,13 +5,13 @@
  - [ ] Text rendering API for looks category
 
 # Order of implementation
- 2. Variable
- 3. List
- 1. Operator
- 2. Control
- 4. Motion
- 5. Looks
- 6. Event
+ 2. [x] Variable 
+ 3. [x] List
+ 1. [ ] Operator
+ 2. [ ] Control
+ 4. [ ] Motion
+ 5. [ ] Looks
+ 6. [ ] Event
 
 ## Motion
  - [x] Move steps
@@ -137,9 +137,9 @@
  - [x] Delete all of
  - [x] Insert at list
  - [x] Replace item
- - [ ] Item of list Reporter
- - [ ] Item num of list Reporter
- - [ ] Length of list Reporter
- - [ ] List contains item Reporter (B)
+ - [x] Item of list Reporter
+ - [x] Item num of list Reporter
+ - [x] Length of list Reporter
+ - [x] List contains item Reporter (B)
  - [ ] Show list (WIP wont be working on for awhile)
  - [ ] Hide list (WIP wont be working on for awhile)

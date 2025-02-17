@@ -26,6 +26,9 @@ static std::map<std::string, BlockHandler> getBlockHandlers() {
     handlers["data_insertatlist"] = listInsertAt;
     handlers["data_replaceitemoflist"] = listReplaceItem;
 
+    // Used for debugging
+    // handlers["looks_sayforsecs"] = debugPrint;
+
     return handlers;
 }
 
@@ -44,6 +47,11 @@ static std::map<std::string, ReporterHandler> getReporterHandlers() {
     handlers["operator_and"] = operatorAnd;
     handlers["operator_or"] = operatorOr;
     handlers["operator_not"] = operatorNot;
+
+    handlers["data_itemoflist"] = dataItemOfList;
+    handlers["data_itemnumoflist"] = dataItemNumOfList;
+    handlers["data_lengthoflist"] = dataLengthOfList;
+    handlers["data_listcontainsitem"] = dataListContainsItem;
 
     return handlers;
 }

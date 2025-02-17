@@ -14,6 +14,7 @@ set(SCRATCH_RUNNER_SRC
     src/Main.cpp
     src/ScratchRunner/Runner.cpp
     src/ScratchRunner/Utility/Conv.cpp
+    src/ScratchRunner/Utility/Vars.cpp
     src/ScratchRunner/Scratch/ThreadedTarget/ThreadedTarget.cpp
     src/ScratchRunner/Scratch/ThreadedTarget/Worker/Worker.cpp
     src/ScratchRunner/Scratch/ThreadedTarget/Exec/Exec.cpp
