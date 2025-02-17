@@ -14,6 +14,7 @@ set(SCRATCH_RUNNER_SRC
     src/Main.cpp
     src/ScratchRunner/Runner.cpp
     src/ScratchRunner/Utility/Conv.cpp
+    src/ScratchRunner/Utility/Vars.cpp
     src/ScratchRunner/Scratch/ThreadedTarget/ThreadedTarget.cpp
     src/ScratchRunner/Scratch/ThreadedTarget/Worker/Worker.cpp
     src/ScratchRunner/Scratch/ThreadedTarget/Exec/Exec.cpp
@@ -22,6 +23,7 @@ set(SCRATCH_RUNNER_SRC
 
 add_executable(Main ${SCRATCH_RUNNER_SRC})
 target_include_directories(Main PRIVATE include/)
+target_include_directories(Main PRIVATE include/glm)
 target_include_directories(Main PRIVATE ${CMAKE_SOURCE_DIR}/src/)
 target_include_directories(Main PRIVATE ${CMAKE_SOURCE_DIR}/include/rapidjson/include/)
 target_link_directories(Main PRIVATE lib/)

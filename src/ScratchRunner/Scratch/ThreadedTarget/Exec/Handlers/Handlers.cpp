@@ -1,6 +1,7 @@
 #include "Handlers.hpp"
 
 #include "ScratchRunner/Utility/Conv.hpp"
+#include "ScratchRunner/Utility/Vars.hpp"
 #include "../Exec.hpp"
 #include "ScratchRunner/Runner.hpp"
 #include <cxxabi.h>
@@ -67,10 +68,6 @@ static std::any resolveValue(ThreadedTarget* target, std::any v) {
     } else {
         throw std::runtime_error("Unsupported value \"" + demangle(v.type().name()) + "\"");
     }
-}
-
-static bool isNotExactInteger(double value) {
-    return std::floor(value) != value;
 }
 
 void motionMoveSteps(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
@@ -244,18 +241,7 @@ std::any operatorEq(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block)
     auto param1 = resolveValue(target, block->inputs["OPERAND1"]);
     auto param2 = resolveValue(target, block->inputs["OPERAND2"]);
 
-    if (param1.type() == typeid(std::string) || param2.type() == typeid(std::string)) {
-        std::string sparam1 = stringFromAny(param1);
-        std::string sparam2 = stringFromAny(param2);
-
-        return static_cast<int>(sparam1 == sparam2);
-    } else {
-        // Treat as numbers
-        double dparam1 = doubleFromAny(param1);
-        double dparam2 = doubleFromAny(param2);
-
-        return static_cast<int>(dparam1 == dparam2);
-    }
+    return static_cast<int>(valuesAreEqual(param1, param2));
 }
 
 std::any operatorAnd(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
@@ -398,4 +384,61 @@ void listReplaceItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block
     } else {
         assert(false);
     }
+}
+
+std::any dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    int index = std::floor(doubleFromAny(resolveValue(target, block->inputs.at("INDEX"))));
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        return target->listAt(listID, index);
+    } else if (target->getStage()->hasList(listID)) {
+        return target->getStage()->listAt(listID, index);
+    } else {
+        assert(false);
+    }
+}
+
+std::any dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    std::any item = resolveValue(target, block->inputs.at("ITEM"));
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        return static_cast<double>(target->listFind(listID, item));
+    } else if (target->getStage()->hasList(listID)) {
+        return static_cast<double>(target->getStage()->listFind(listID, item));
+    } else {
+        assert(false);
+    }
+}
+
+std::any dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    std::string listID = block->fields.at("LIST");
+
+    if (target->hasList(listID)) {
+        return static_cast<double>(target->listLength(listID));
+    } else if (target->getStage()->hasList(listID)) {
+        return static_cast<double>(target->getStage()->listLength(listID));
+    } else {
+        assert(false);
+    }
+}
+
+std::any dataListContainsItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    std::string listID = block->fields.at("LIST");
+    std::any item = resolveValue(target, block->inputs.at("ITEM"));
+
+    if (target->hasList(listID)) {
+        return static_cast<int>(target->listContains(listID, item));
+    } else if (target->getStage()->hasList(listID)) {
+        return static_cast<int>(target->getStage()->listContains(listID, item));
+    } else {
+        assert(false);
+    }
+}
+
+void debugPrint(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block) {
+    std::any item = resolveValue(target, block->inputs.at("MESSAGE"));
+
+    std::cout << "DEBUG: \"" << stringFromAny(item) << "\"\n";
 }

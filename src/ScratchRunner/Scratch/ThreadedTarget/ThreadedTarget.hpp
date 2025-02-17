@@ -120,6 +120,10 @@ public:
     void listInsertAt(std::string id, int scratchIndex, std::any value);
     void listReplaceAt(std::string id, int scratchIndex, std::any value);
 
+    std::any listAt(std::string id, int scratchIndex) const;
+    std::size_t listFind(std::string id, std::any value) const;
+    std::size_t listLength(std::string id) const;
+    bool listContains(std::string id, std::any value) const;
 
     void setCurrentCostumeID(int costume);
     void setLayerOrder(int layerOrder);

@@ -34,3 +34,12 @@ void listDelete(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void listDeleteAll(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void listInsertAt(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
 void listReplaceItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any dataItemOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any dataItemNumOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any dataLengthOfList(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+std::any dataListContainsItem(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
+
+
+
+
+void debugPrint(ThreadedTarget* target, std::shared_ptr<ScratchBlock> block);
